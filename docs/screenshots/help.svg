@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="terminal" baseProfile="full" viewBox="0 0 927 727" width="927" version="1.1">
+    <defs>
+        <termtosvg:template_settings xmlns:termtosvg="https://github.com/nbedos/termtosvg">
+            <termtosvg:screen_geometry columns="110" rows="38"/>
+            <termtosvg:animation type="css"/>
+        </termtosvg:template_settings>
+        <style type="text/css" id="generated-style"><![CDATA[#screen {
+                font-family: 'DejaVu Sans Mono', monospace;
+                font-style: normal;
+                font-size: 14px;
+            }
+
+        text {
+            dominant-baseline: text-before-edge;
+            white-space: pre;
+        }
+    
+            :root {
+                --animation-duration: 1000ms;
+            }
+
+            @keyframes roll {
+                0.000%{transform:translateY(0px)}
+100.000%{transform:translateY(0px)}
+            }
+
+            #screen_view {
+                animation-duration: 1000ms;
+                animation-iteration-count:infinite;
+                animation-name:roll;
+                animation-timing-function: steps(1,end);
+                animation-fill-mode: forwards;
+            }
+        ]]></style>
+        <style type="text/css" id="user-style">
+            /* The colors defined below are the default 16 colors used for rendering text of the terminal. Adjust
+               them as needed.
+               gjm8 color theme (source: https://terminal.sexy/) */
+            .foreground {fill: #f8f8f2}
+            .background {fill: #272822}
+            .color0 {fill: #272822}
+            .color1 {fill: #f92672}
+            .color2 {fill: #a6e22e}
+            .color3 {fill: #f4bf75}
+            .color4 {fill: #66d9ef}
+            .color5 {fill: #ae81ff}
+            .color6 {fill: #a1efe4}
+            .color7 {fill: #f8f8f2}
+            .color8 {fill: #75715e}
+            .color9 {fill: #fd971f}
+            .color10 {fill: #383830}
+            .color11 {fill: #49483e}
+            .color12 {fill: #a59f85}
+            .color13 {fill: #f5f4f1}
+            .color14 {fill: #cc6633}
+            .color15 {fill: #f9f8f5}
+        </style>
+    </defs>
+    <rect id="terminalui" class="background" width="100%" height="100%" ry="4.5826941"/>
+    <circle cx="24" cy="23" r="7" class="color1"/>
+    <circle cx="44" cy="23" r="7" class="color3"/>
+    <circle cx="64" cy="23" r="7" class="color2"/>
+    <svg id="screen" width="880" height="646" x="23" y="50" viewBox="0 0 880 646" preserveAspectRatio="xMidYMin slice"><rect class="background" height="100%" width="100%" x="0" y="0"/><defs><g id="g1"><text x="0" textLength="72" class="foreground">Examples:</text></g><g id="g2"><text x="0" textLength="184" class="foreground">  # NEXUS (recommended)</text></g><g id="g3"><text x="0" textLength="448" class="foreground">  reconpro nexus                # Mind-blowing agent TUI</text></g><g id="g4"><text x="0" textLength="280" class="foreground">  # AI Agent (reasoning + 18 tools)</text></g><g id="g5"><text x="0" textLength="552" class="foreground">  reconpro agent "fully recon example.com, find CVEs, generate SARIF"</text></g><g id="g6"><text x="0" textLength="440" class="foreground">  reconpro agent "swarm attack myapp.com with 3 rounds"</text></g><g id="g7"><text x="0" textLength="176" class="foreground">  # Swarm Intelligence</text></g><g id="g8"><text x="0" textLength="576" class="foreground">  reconpro swarm example.com               # SCOUT&#8594;HACKER&#8594;CODER&#8594;GUARDIAN</text></g><g id="g9"><text x="0" textLength="512" class="foreground">  reconpro swarm example.com --mode attack   # SCOUT+HACKER only</text></g><g id="g10"><text x="0" textLength="200" class="foreground">  # Adversarial Self-Play</text></g><g id="g11"><text x="0" textLength="560" class="foreground">  reconpro adversarial example.com           # 3-round hacker vs coder</text></g><g id="g12"><text x="0" textLength="80" class="foreground">  # Remote</text></g><g id="g13"><text x="0" textLength="216" class="foreground">  reconpro scan example.com</text></g><g id="g14"><text x="0" textLength="240" class="foreground">  reconpro vibesec example.com</text></g><g id="g15"><text x="0" textLength="128" class="foreground">  # Local + Code</text></g><g id="g16"><text x="0" textLength="400" class="foreground">  reconpro audit              # Full machine audit</text></g><g id="g17"><text x="0" textLength="464" class="foreground">  reconpro ast /path/to/code  # AST vulnerability analysis</text></g><g id="g18"><text x="0" textLength="352" class="foreground">  reconpro secrets            # Find secrets</text></g><g id="g19"><text x="0" textLength="184" class="foreground">  # Threat Intelligence</text></g><g id="g20"><text x="0" textLength="384" class="foreground">  reconpro cve SQL injection    # NVD CVE lookup</text></g><g id="g21"><text x="0" textLength="384" class="foreground">  reconpro graph example.com   # Knowledge graph</text></g><g id="g22"><text x="0" textLength="192" class="foreground">  # Export (CI/CD ready)</text></g><g id="g23"><text x="0" textLength="504" class="foreground">  reconpro export report.sarif # SARIF for GitHub Code Scanning</text></g><g id="g24"><text x="0" textLength="392" class="foreground">  reconpro export report.md     # Markdown report</text></g><g id="g25"><text x="0" textLength="96" class="foreground">  # Advanced</text></g><g id="g26"><text x="0" textLength="296" class="foreground">  reconpro blitz t1.com t2.com t3.com</text></g><g id="g27"><text x="0" textLength="264" class="foreground">  reconpro subdomains example.com</text></g><g id="g28"><text x="0" textLength="336" class="foreground">  reconpro schedule example.com --every 1h</text></g><g id="g29"><text x="0" textLength="224" class="foreground">  reconpro serve --port 7890</text></g><g id="g30"><text x="0" textLength="8" class="background"> </text></g></defs><g id="screen_view"><g><use xlink:href="#g1" y="0"/><use xlink:href="#g2" y="17"/><use xlink:href="#g3" y="34"/><use xlink:href="#g4" y="68"/><use xlink:href="#g5" y="85"/><use xlink:href="#g6" y="102"/><use xlink:href="#g7" y="136"/><use xlink:href="#g8" y="153"/><use xlink:href="#g9" y="170"/><use xlink:href="#g10" y="204"/><use xlink:href="#g11" y="221"/><use xlink:href="#g12" y="255"/><use xlink:href="#g13" y="272"/><use xlink:href="#g14" y="289"/><use xlink:href="#g15" y="323"/><use xlink:href="#g16" y="340"/><use xlink:href="#g17" y="357"/><use xlink:href="#g18" y="374"/><use xlink:href="#g19" y="408"/><use xlink:href="#g20" y="425"/><use xlink:href="#g21" y="442"/><use xlink:href="#g22" y="476"/><use xlink:href="#g23" y="493"/><use xlink:href="#g24" y="510"/><use xlink:href="#g25" y="544"/><use xlink:href="#g26" y="561"/><use xlink:href="#g27" y="578"/><use xlink:href="#g28" y="595"/><use xlink:href="#g29" y="612"/><rect x="0" y="629" width="8" height="17" class="foreground"/><use xlink:href="#g30" y="629"/></g></g></svg>
+</svg>

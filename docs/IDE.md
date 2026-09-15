@@ -68,9 +68,11 @@ upload-artifact@v4 → codeql-action/upload-sarif@v3 (gated on sarif).
 Inputs reach the steps via env, never inline interpolation. Demo
 workflow: `.github/workflows/reconpro-scan.yml`.
 
-**Manifest-validated + live step-sequence executed locally**
-(`python3 actions/tools/validate.py` → 42/42; a GitHub-hosted run is
-impossible in the sandbox). The workflow has never run on GitHub.
+**Manifest-validated + executed live on GitHub** (`python3
+actions/tools/validate.py` → 42/42 locally; the demo workflow
+`.github/workflows/reconpro-scan.yml` has run green on GitHub Actions on
+every push to `main`, including on the live repository — see the Actions
+badge in the README).
 
 ## GitHub App — `github-app/`
 

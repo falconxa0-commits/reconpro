@@ -10,11 +10,15 @@ those require internet access and were not run while writing this page.
 
 ## Installation
 
-### From PyPI-style index (pip install reconpro)
+### From PyPI
 
 ```bash
 pip install reconpro
 ```
+
+Live at https://pypi.org/project/reconpro/ — v11.1.0 ships as a wheel
+(byte-reproducible, Ed25519-signed checksums) and an sdist; see
+[RELEASE.md](RELEASE.md) for artifact verification.
 
 Optional extras: `pip install "reconpro[full]"` (aiohttp, playwright,
 openai/anthropic, networkx, scapy, shodan, websockets) or pick
@@ -27,8 +31,8 @@ Python **3.10+**.
 ### From source
 
 ```bash
-git clone <this repo>
-cd reconpro-github
+git clone https://github.com/falconxa0-commits/reconpro.git
+cd reconpro
 pip install -e .           # editable install
 # or build a wheel yourself:
 python tools/release_manager.py build --reproducible

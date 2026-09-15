@@ -131,10 +131,14 @@ tools/ci_local.sh        # lint + smoke pytest + startup bench + security baseli
 tools/run_test_chunks.sh # the same chunked pytest groups CI runs
 ```
 
-**Honest status**: these workflows are YAML-validated and their steps
-mirror locally-verified commands, but they have **never executed on
-GitHub Actions** (this repository has not been pushed to GitHub). There
-is no CI badge in the README for exactly that reason.
+**Honest status**: the repository is live at
+https://github.com/falconxa0-commits/reconpro and all five workflows
+(`ci.yml`, `security.yml`, `sdks.yml`, `release.yml`, `reconpro-scan.yml`)
+have executed on GitHub Actions with green runs on `main` — including
+failed-and-fixed iterations visible in the Actions history. The README
+carries the badges. The v11.1.0 release artifacts were produced by
+`tools/release_manager.py` and attached to the GitHub Release; the
+`Release` workflow run on tag `v11.1.0` is green.
 
 ## Nix
 

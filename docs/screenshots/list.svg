@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="terminal" baseProfile="full" viewBox="0 0 927 1067" width="927" version="1.1">
+    <defs>
+        <termtosvg:template_settings xmlns:termtosvg="https://github.com/nbedos/termtosvg">
+            <termtosvg:screen_geometry columns="110" rows="58"/>
+            <termtosvg:animation type="css"/>
+        </termtosvg:template_settings>
+        <style type="text/css" id="generated-style"><![CDATA[#screen {
+                font-family: 'DejaVu Sans Mono', monospace;
+                font-style: normal;
+                font-size: 14px;
+            }
+
+        text {
+            dominant-baseline: text-before-edge;
+            white-space: pre;
+        }
+    
+            :root {
+                --animation-duration: 1260ms;
+            }
+
+            @keyframes roll {
+                0.000%{transform:translateY(0px)}
+20.635%{transform:translateY(-1020px)}
+100.000%{transform:translateY(-1020px)}
+            }
+
+            #screen_view {
+                animation-duration: 1260ms;
+                animation-iteration-count:infinite;
+                animation-name:roll;
+                animation-timing-function: steps(1,end);
+                animation-fill-mode: forwards;
+            }
+        ]]></style>
+        <style type="text/css" id="user-style">
+            /* The colors defined below are the default 16 colors used for rendering text of the terminal. Adjust
+               them as needed.
+               gjm8 color theme (source: https://terminal.sexy/) */
+            .foreground {fill: #f8f8f2}
+            .background {fill: #272822}
+            .color0 {fill: #272822}
+            .color1 {fill: #f92672}
+            .color2 {fill: #a6e22e}
+            .color3 {fill: #f4bf75}
+            .color4 {fill: #66d9ef}
+            .color5 {fill: #ae81ff}
+            .color6 {fill: #a1efe4}
+            .color7 {fill: #f8f8f2}
+            .color8 {fill: #75715e}
+            .color9 {fill: #fd971f}
+            .color10 {fill: #383830}
+            .color11 {fill: #49483e}
+            .color12 {fill: #a59f85}
+            .color13 {fill: #f5f4f1}
+            .color14 {fill: #cc6633}
+            .color15 {fill: #f9f8f5}
+        </style>
+    </defs>
+    <rect id="terminalui" class="background" width="100%" height="100%" ry="4.5826941"/>
+    <circle cx="24" cy="23" r="7" class="color1"/>
+    <circle cx="44" cy="23" r="7" class="color3"/>
+    <circle cx="64" cy="23" r="7" class="color2"/>
+    <svg id="screen" width="880" height="986" x="23" y="50" viewBox="0 0 880 986" preserveAspectRatio="xMidYMin slice"><rect class="background" height="100%" width="100%" x="0" y="0"/><defs><g id="g1"><text x="0" textLength="8" class="background"> </text></g><g id="g2"><text x="0" textLength="120" font-weight="bold" class="foreground">Remote Modules:</text></g><g id="g3"><text x="0" textLength="272" class="foreground">  recon        RECON              </text><text x="272" textLength="8" font-weight="bold" class="foreground">(</text><text x="280" textLength="56" class="foreground">default</text><text x="336" textLength="8" font-weight="bold" class="foreground">)</text></g><g id="g4"><text x="0" textLength="272" class="foreground">  auth         AUTH BYPASS        </text><text x="272" textLength="8" font-weight="bold" class="foreground">(</text><text x="280" textLength="56" class="foreground">default</text><text x="336" textLength="8" font-weight="bold" class="foreground">)</text></g><g id="g5"><text x="0" textLength="272" class="foreground">  chain        CHAIN HUNTER       </text><text x="272" textLength="8" font-weight="bold" class="foreground">(</text><text x="280" textLength="56" class="foreground">default</text><text x="336" textLength="8" font-weight="bold" class="foreground">)</text></g><g id="g6"><text x="0" textLength="272" class="foreground">  bot          BOT HUNTER         </text><text x="272" textLength="8" font-weight="bold" class="foreground">(</text><text x="280" textLength="56" class="foreground">default</text><text x="336" textLength="8" font-weight="bold" class="foreground">)</text></g><g id="g7"><text x="0" textLength="272" class="foreground">  gorgon       GORGON ULTRA       </text><text x="272" textLength="8" font-weight="bold" class="foreground">(</text><text x="280" textLength="56" class="foreground">default</text><text x="336" textLength="8" font-weight="bold" class="foreground">)</text></g><g id="g8"><text x="0" textLength="272" class="foreground">  oblivion     OBLIVION           </text><text x="272" textLength="8" font-weight="bold" class="foreground">(</text><text x="280" textLength="56" class="foreground">default</text><text x="336" textLength="8" font-weight="bold" class="foreground">)</text></g><g id="g9"><text x="0" textLength="272" class="foreground">  vibesec      VIBESEC            </text><text x="272" textLength="8" font-weight="bold" class="foreground">(</text><text x="280" textLength="56" class="foreground">default</text><text x="336" textLength="8" font-weight="bold" class="foreground">)</text></g><g id="g10"><text x="0" textLength="264" class="foreground">  nhi          NHI GRAPH         </text></g><g id="g11"><text x="0" textLength="272" class="foreground">  pegasus      PEGASUS HUNTER     </text><text x="272" textLength="8" font-weight="bold" class="foreground">(</text><text x="280" textLength="56" class="foreground">default</text><text x="336" textLength="8" font-weight="bold" class="foreground">)</text></g><g id="g12"><text x="0" textLength="264" class="foreground">  cloud_recon  CLOUD RECON       </text></g><g id="g13"><text x="0" textLength="264" class="foreground">  team         TEAM              </text></g><g id="g14"><text x="0" textLength="336" class="foreground">  quantum_fingerprint QUANTUM FINGERPRINT </text><text x="336" textLength="8" font-weight="bold" class="foreground">(</text><text x="344" textLength="56" class="foreground">default</text><text x="400" textLength="8" font-weight="bold" class="foreground">)</text></g><g id="g15"><text x="0" textLength="304" class="foreground">  dark_web_monitor DARK WEB MONITOR   </text><text x="304" textLength="8" font-weight="bold" class="foreground">(</text><text x="312" textLength="56" class="foreground">default</text><text x="368" textLength="8" font-weight="bold" class="foreground">)</text></g><g id="g16"><text x="0" textLength="272" class="foreground">  info_ops     INFO OPS           </text><text x="272" textLength="8" font-weight="bold" class="foreground">(</text><text x="280" textLength="56" class="foreground">default</text><text x="336" textLength="8" font-weight="bold" class="foreground">)</text></g><g id="g17"><text x="0" textLength="352" class="foreground">  steganography_detector STEGANO DETECTOR   </text><text x="352" textLength="8" font-weight="bold" class="foreground">(</text><text x="360" textLength="56" class="foreground">default</text><text x="416" textLength="8" font-weight="bold" class="foreground">)</text></g><g id="g18"><text x="0" textLength="288" class="foreground">  covert_channel COVERT CHANNEL     </text><text x="288" textLength="8" font-weight="bold" class="foreground">(</text><text x="296" textLength="56" class="foreground">default</text><text x="352" textLength="8" font-weight="bold" class="foreground">)</text></g><g id="g19"><text x="0" textLength="296" class="foreground">  zero_day_hunter ZERO-DAY HUNTER    </text><text x="296" textLength="8" font-weight="bold" class="foreground">(</text><text x="304" textLength="56" class="foreground">default</text><text x="360" textLength="8" font-weight="bold" class="foreground">)</text></g><g id="g20"><text x="0" textLength="336" class="foreground">  infrastructure_ghost INFRA GHOST        </text><text x="336" textLength="8" font-weight="bold" class="foreground">(</text><text x="344" textLength="56" class="foreground">default</text><text x="400" textLength="8" font-weight="bold" class="foreground">)</text></g><g id="g21"><text x="0" textLength="328" class="foreground">  signal_intelligence SIGINT             </text><text x="328" textLength="8" font-weight="bold" class="foreground">(</text><text x="336" textLength="56" class="foreground">default</text><text x="392" textLength="8" font-weight="bold" class="foreground">)</text></g><g id="g22"><text x="0" textLength="360" class="foreground">  nation_state_attributor NATION-STATE ATTR  </text><text x="360" textLength="8" font-weight="bold" class="foreground">(</text><text x="368" textLength="56" class="foreground">default</text><text x="424" textLength="8" font-weight="bold" class="foreground">)</text></g><g id="g23"><text x="0" textLength="312" class="foreground">  weaponized_report WEAPONIZED REPORT  </text><text x="312" textLength="8" font-weight="bold" class="foreground">(</text><text x="320" textLength="56" class="foreground">default</text><text x="376" textLength="8" font-weight="bold" class="foreground">)</text></g><g id="g24"><text x="0" textLength="288" class="foreground">  honeypot_dance HONEYPOT DANCE     </text><text x="288" textLength="8" font-weight="bold" class="foreground">(</text><text x="296" textLength="56" class="foreground">default</text><text x="352" textLength="8" font-weight="bold" class="foreground">)</text></g><g id="g25"><text x="0" textLength="272" class="foreground">  dead_drop    DEAD DROP          </text><text x="272" textLength="8" font-weight="bold" class="foreground">(</text><text x="280" textLength="56" class="foreground">default</text><text x="336" textLength="8" font-weight="bold" class="foreground">)</text></g><g id="g26"><text x="0" textLength="272" class="foreground">  container_sec CONTAINER SEC     </text></g><g id="g27"><text x="0" textLength="264" class="foreground">  iac_audit    IaC AUDIT         </text></g><g id="g28"><text x="0" textLength="72" class="foreground">  Total: </text><text x="72" textLength="16" font-weight="bold" class="foreground">28</text><text x="88" textLength="64" class="foreground"> modules</text></g></defs><g id="screen_view"><g><rect x="0" y="0" width="8" height="17" class="foreground"/><use xlink:href="#g1" y="0"/></g><g><use xlink:href="#g2" y="1037"/><use xlink:href="#g3" y="1071"/><use xlink:href="#g4" y="1088"/><use xlink:href="#g5" y="1105"/><use xlink:href="#g6" y="1122"/><use xlink:href="#g7" y="1139"/><use xlink:href="#g8" y="1156"/><use xlink:href="#g9" y="1173"/><use xlink:href="#g10" y="1190"/><use xlink:href="#g11" y="1207"/><use xlink:href="#g12" y="1224"/><use xlink:href="#g13" y="1241"/><use xlink:href="#g14" y="1258"/><use xlink:href="#g15" y="1275"/><use xlink:href="#g16" y="1292"/><use xlink:href="#g17" y="1309"/><use xlink:href="#g18" y="1326"/><use xlink:href="#g19" y="1343"/><use xlink:href="#g20" y="1360"/><use xlink:href="#g21" y="1377"/><use xlink:href="#g22" y="1394"/><use xlink:href="#g23" y="1411"/><use xlink:href="#g24" y="1428"/><use xlink:href="#g25" y="1445"/><use xlink:href="#g26" y="1462"/><use xlink:href="#g27" y="1479"/><use xlink:href="#g28" y="1513"/><rect x="0" y="1547" width="8" height="17" class="foreground"/><use xlink:href="#g1" y="1547"/></g></g></svg>
+</svg>
