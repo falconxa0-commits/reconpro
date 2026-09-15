@@ -20,10 +20,16 @@ fn version() {
 
 #[test]
 fn bad_python() {
+    // Capture the PRE-mutation value so the restore is exact. (Reading the
+    // env after set_var would "restore" /nonexistent/python itself — that
+    // bug was caught by the SDKs CI workflow on first real execution.)
+    let original = std::env::var("RECONPRO_PYTHON").ok();
     std::env::set_var("RECONPRO_PYTHON", "/nonexistent/python");
     let result = Client::new().version();
-    // Restore for other tests regardless of outcome.
-    std::env::set_var("RECONPRO_PYTHON", test_python());
+    match original {
+        Some(v) => std::env::set_var("RECONPRO_PYTHON", v),
+        None => std::env::remove_var("RECONPRO_PYTHON"),
+    }
     match result {
         Err(SdkError::Io(_)) => {} // spawn failure for a bad path — expected
         other => panic!("expected SdkError::Io, got {:?}", other.map(|_| ())),
