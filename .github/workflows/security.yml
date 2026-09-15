@@ -13,7 +13,8 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: read         # checkout + read code
+  security-events: write # github/codeql-action/upload-sarif ingestion
 
 jobs:
   security:
@@ -46,23 +47,11 @@ jobs:
 
       - name: Dependency audit (pip-audit, with pinning-check fallback)
         run: |
-          if pip install pip-audit; then
-            pip-audit -r requirements.txt --strict
-          else
+          if ! pip install pip-audit; then
             echo "pip-audit unavailable — falling back to requirements pinning check"
-            python - <<'EOF'
-            import re
-            from pathlib import Path
-            reqs = [l.split("#")[0].strip() for l in
-                    Path("requirements.txt").read_text().splitlines()]
-            reqs = [r for r in reqs if r]
-            unpinned = [r for r in reqs if "==" not in r]
-            print(f"{len(reqs)} requirements, {len(unpinned)} not == pinned:")
-            for r in unpinned:
-                print(f"  UNPINNED: {r}")
-            print("NOTE: unpinned ranges limit pip-audit reproducibility; "
-                  "pin with == or use a lockfile for hermetic deploys.")
-            EOF
+            python tools/requirements_pinning_check.py
+          else
+            pip-audit -r requirements.txt --strict
           fi
 
       - name: Upload SARIF
