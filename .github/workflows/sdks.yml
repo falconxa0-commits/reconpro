@@ -1,0 +1,80 @@
+# ReconPro SDKs — compile + test the Go and Rust SDKs on real toolchains.
+# The SDKs were authored in an environment without go/cargo toolchains
+# (smoke.sh exits 3 "ENVIRONMENT BLOCKED" there); this workflow provides
+# the verification those scripts were designed for: build, vet, unit
+# tests, and the offline example run against the pip-installed CLI.
+name: SDKs
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  go:
+    name: Go SDK (build + vet + test + example)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+
+      - name: Set up Python + install reconpro CLI
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install reconpro CLI
+        run: |
+          python -m pip install --upgrade pip
+          pip install .
+
+      - name: Go SDK smoke (build, vet, test, offline example)
+        env:
+          RECONPRO_PYTHON: python3
+          RECONPRO_ROOT: ${{ github.workspace }}
+        run: |
+          chmod +x sdks/go/smoke.sh
+          bash sdks/go/smoke.sh
+
+  rust:
+    name: Rust SDK (build + test + example)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Rust (stable, minimal profile)
+        run: |
+          rustup toolchain install stable --profile minimal --no-self-update
+          rustup default stable
+          cargo --version
+          rustc --version
+
+      - name: Set up Python + install reconpro CLI
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install reconpro CLI
+        run: |
+          python -m pip install --upgrade pip
+          pip install .
+
+      - name: Rust SDK smoke (build, test serialized, offline example)
+        env:
+          RECONPRO_PYTHON: python3
+          RECONPRO_ROOT: ${{ github.workspace }}
+        run: |
+          chmod +x sdks/rust/smoke.sh
+          bash sdks/rust/smoke.sh

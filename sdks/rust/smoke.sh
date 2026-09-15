@@ -16,6 +16,8 @@ fi
 
 set -e
 cargo build --all-targets
-cargo test
+# --test-threads=1: version()/bad_python() mutate RECONPRO_PYTHON (documented
+# in tests/client.rs) — serialize to avoid cross-test env races.
+cargo test -- --test-threads=1
 cargo run --example basic -- --offline
 echo "RUST SDK SMOKE OK"

@@ -1,8 +1,8 @@
 //! Thin subprocess wrapper around the reconpro CLI.
 //!
-//! Config (struct fields or env): RECONPRO_PYTHON (default
-//! /home/z/.venv/bin/python3), RECONPRO_ROOT (subprocess cwd, default
-//! /home/z/my-project/download/reconpro-github). Default timeout 120s.
+//! Config (struct fields or env): RECONPRO_PYTHON (default "python3",
+//! resolved via PATH), RECONPRO_ROOT (subprocess cwd, default ".").
+//! Default timeout 120s.
 //!
 //! Verified CLI quirks (reconpro 11.1.0): `--version` and `doctor --json`
 //! write to STDOUT; `history` has NO --json flag (exit 2) and its human
@@ -15,8 +15,8 @@ use std::process::{Command, Stdio};
 use std::thread;
 use std::time::{Duration, Instant};
 
-pub const DEFAULT_PYTHON: &str = "/home/z/.venv/bin/python3";
-pub const DEFAULT_ROOT: &str = "/home/z/my-project/download/reconpro-github";
+pub const DEFAULT_PYTHON: &str = "python3";
+pub const DEFAULT_ROOT: &str = ".";
 const DEFAULT_TIMEOUT: Duration = Duration::from_secs(120);
 const EXPORT_FORMATS: [&str; 4] = ["sarif", "md", "json", "html"];
 const INVALID_TARGET_CHARS: &str = ";$`&|<>(){}[]!*'\"\\\n\r\t ";
