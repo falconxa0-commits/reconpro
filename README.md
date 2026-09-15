@@ -35,8 +35,9 @@ about arguments, fast to start (~46 ms cold).
 - **Release pipeline** — reproducible wheel builds, CycloneDX 1.5 SBOM,
   SHA256SUMS with Ed25519 + GPG signatures, a verify command that
   actually detects tampering — see [docs/RELEASE.md](docs/RELEASE.md)
-- **Language SDKs** — Python / Node.js / Java (tested) and Go / Rust
-  (compile-blocked: no toolchains in the dev environment) —
+- **Language SDKs** — Python / Node.js / Java (tested locally) and
+  Go / Rust (build + test verified on GitHub Actions runners via the
+  `SDKs` workflow) —
   see [docs/SDKS.md](docs/SDKS.md)
 - **IDE & CI support** — VS Code extension skeleton, JetBrains plugin
   skeleton, Neovim lua plugin, composite GitHub Action, GitHub App
@@ -127,9 +128,11 @@ dist/                signed release artifacts (wheel, sdist, SBOM, SHA256SUMS, s
 - The test suite runs in CI chunks: the full suite in one pytest
   invocation hangs (known issue); a handful of files are excluded with
   documented reasons (see `tools/ci_test_groups.txt`).
-- Go/Rust SDKs and the JetBrains plugin are complete but compile-blocked
-  in the development environment (toolchains absent); their validation
-  status is stated precisely in [docs/SDKS.md](docs/SDKS.md) and
+- Go/Rust SDKs are build- and test-verified on GitHub Actions runners
+  (`.github/workflows/sdks.yml`); the local dev sandbox has no go/cargo
+  toolchains, so `smoke.sh` there honestly exits 3. The JetBrains plugin
+  remains structurally validated only (no IDE host) — status is stated
+  precisely in [docs/SDKS.md](docs/SDKS.md) and
   [docs/IDE.md](docs/IDE.md).
 
 ## License

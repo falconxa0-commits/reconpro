@@ -21,12 +21,13 @@ Shared configuration across all five:
 | Python | **TESTED** — 5 passed, 1 skipped (skip = network scan test) | `/home/z/.venv/bin/python3 -m pytest sdks/python/tests -q` | `sdks/python/reconpro_sdk/client.py` |
 | Node.js | **TESTED** — 6 pass / 0 fail (node v24.19.0, node:test) | `node --test "sdks/node/test/*.test.js"` (glob required — `node --test <dir>` fails on this node version) or `cd sdks/node && npm test` | `sdks/node/src/index.js` |
 | Java | **TESTED** — 5/5 hand asserts + offline example | `cd sdks/java && bash build.sh` (falls back to ecj — the sandbox has a JRE-only OpenJDK 21 without `javac`) | `sdks/java/src/main/java/com/reconpro/sdk/ReconProClient.java` |
-| Go | **COMPILE-BLOCKED** — no `go` toolchain in this environment | `cd sdks/go && bash smoke.sh` where Go exists | `sdks/go/client.go` |
-| Rust | **COMPILE-BLOCKED** — no `cargo`/`rustc` in this environment | `cd sdks/rust && bash smoke.sh` where Rust exists | `sdks/rust/src/client.rs` |
+| Go | **TESTED** — build + vet + tests + offline example on GitHub Actions (Go 1.22; `.github/workflows/sdks.yml`) | `cd sdks/go && bash smoke.sh` where Go exists | `sdks/go/client.go` |
+| Rust | **TESTED** — build + tests + offline example on GitHub Actions (Rust stable; `.github/workflows/sdks.yml`) | `cd sdks/rust && bash smoke.sh` where Rust exists | `sdks/rust/src/client.rs` |
 
-Go and Rust code is complete and mirrors the tested SDKs' behavior, but
-it has never been compiled — run `smoke.sh` in an environment with the
-toolchain before use.
+Go and Rust were authored without local toolchains; the `SDKs` CI workflow
+performed their first real compilation (catching and fixing two genuine Rust
+bugs — a `build_args` lifetime error and a test env-restore bug). Both now
+build and pass tests on every push to `main`.
 
 ## Common API surface
 
@@ -80,7 +81,7 @@ System.out.println(client.doctor());     // raw JSON string (no parser included)
 Errors: `ReconProClient.SdkException` with `.exitCode` and
 `.stderrText`. Build + test: `cd sdks/java && bash build.sh`.
 
-## Go — package `reconpro` (COMPILE-BLOCKED)
+## Go — package `reconpro` (CI-verified)
 
 ```go
 client := reconpro.NewClient()
@@ -91,7 +92,7 @@ doctor, err := client.Doctor()        // map[string]any from doctor --json
 `exec.CommandContext` with an argument list; killed on deadline.
 Errors carry exit status + stderr.
 
-## Rust — crate `reconpro_sdk` (COMPILE-BLOCKED, std-only)
+## Rust — crate `reconpro_sdk` (CI-verified, std-only)
 
 ```rust
 let client = Client::default();

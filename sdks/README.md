@@ -14,12 +14,13 @@ typed errors carrying the CLI exit code + stderr.
 | Python | **TESTED** — `5 passed, 1 skipped` (pytest; skip = network scan test) | `cd /home/z/my-project/download/reconpro-github && /home/z/.venv/bin/python3 -m pytest sdks/python/tests -q` | `sdks/python/reconpro_sdk/client.py` (`ReconProClient`) |
 | Node.js | **TESTED** — `6 pass / 0 fail` (node:test, node v24.19.0) | `node --test "sdks/node/test/*.test.js"` (from repo root) or `cd sdks/node && npm test` | `sdks/node/src/index.js` (`ReconProClient`) |
 | Java | **TESTED** — `ALL TESTS PASSED` (5/5 hand asserts) + offline example | `cd sdks/java && bash build.sh` | `sdks/java/src/main/java/com/reconpro/sdk/ReconProClient.java` |
-| Go | **COMPILE-BLOCKED** — `go` toolchain absent in this environment | where Go exists: `cd sdks/go && bash smoke.sh` | `sdks/go/client.go` (package `reconpro`) |
-| Rust | **COMPILE-BLOCKED** — `cargo`/`rustc` absent in this environment | where Rust exists: `cd sdks/rust && bash smoke.sh` | `sdks/rust/src/client.rs` (crate `reconpro_sdk`) |
+| Go | **TESTED** — build + vet + all tests + offline example pass on GitHub Actions (Go 1.22, ubuntu-latest; `.github/workflows/sdks.yml`) | locally where Go exists: `cd sdks/go && bash smoke.sh` | `sdks/go/client.go` (package `reconpro`) |
+| Rust | **TESTED** — build + all tests + offline example pass on GitHub Actions (Rust stable, ubuntu-latest; `.github/workflows/sdks.yml`) | locally where Rust exists: `cd sdks/rust && bash smoke.sh` | `sdks/rust/src/client.rs` (crate `reconpro_sdk`) |
 
-Go and Rust code is complete and mirrors the tested SDKs' behavior, but it has
-**never been compiled** — run `smoke.sh` in an environment with the toolchain
-before use.
+Go and Rust were authored without local toolchains; their first real
+compilation happened in the `SDKs` CI workflow, which caught and fixed two
+real Rust bugs (a `build_args` lifetime error and a test env-restore bug).
+Both SDKs now build and pass tests on every push to `main`.
 
 ## Verified CLI quirks (all SDKs adapted to these)
 
