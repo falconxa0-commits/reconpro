@@ -77,7 +77,7 @@ impl Client {
     }
 
     /// Argument list used to spawn the CLI (unit-testable; never a shell string).
-    pub fn build_args<'a>(&self, cli_args: &[&'a str]) -> Vec<&'a str> {
+    pub fn build_args<'a>(&'a self, cli_args: &[&'a str]) -> Vec<&'a str> {
         let mut args: Vec<&str> = vec![self.python_path.as_str(), "-m", "reconpro.cli"];
         args.extend_from_slice(cli_args);
         args
