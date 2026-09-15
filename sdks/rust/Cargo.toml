@@ -1,0 +1,14 @@
+[package]
+name = "reconpro-sdk"
+version = "0.1.0"
+edition = "2021"
+description = "Thin std-only Rust SDK around the ReconPro CLI (no dependencies)"
+license = "MIT"
+
+[lib]
+name = "reconpro_sdk"
+path = "src/lib.rs"
+
+[[example]]
+name = "basic"
+path = "examples/basic.rs"

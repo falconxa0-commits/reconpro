@@ -1,0 +1,74 @@
+{
+  "SARIF result with physical location": {
+    "prefix": "sarif-result",
+    "scope": "sarif",
+    "description": "A SARIF 2.1.0 result object with a physical location and severity-bearing properties.",
+    "body": [
+      "{",
+      "  \"ruleId\": \"${1:RP-RULE_ID}\",",
+      "  \"level\": \"${2|error,warning,note|}\",",
+      "  \"message\": {",
+      "    \"text\": \"${3:Finding description}\"",
+      "  },",
+      "  \"locations\": [",
+      "    {",
+      "      \"physicalLocation\": {",
+      "        \"artifactLocation\": {",
+      "          \"uri\": \"${4:file:///path/to/file.py}\"",
+      "        },",
+      "        \"region\": {",
+      "          \"startLine\": ${5:1},",
+      "          \"startColumn\": ${6:1}",
+      "        }",
+      "      }",
+      "    }",
+      "  ],",
+      "  \"properties\": {",
+      "    \"security-severity\": \"${7:7.0}\",",
+      "    \"remediation\": \"${8:How to fix}\"",
+      "  }",
+      "}"
+    ]
+  },
+  "SARIF tool driver rules entry": {
+    "prefix": "sarif-rule",
+    "scope": "sarif",
+    "description": "A SARIF reportingDescriptor under tool.driver.rules with security-severity (GitHub Code Scanning format).",
+    "body": [
+      "{",
+      "  \"id\": \"${1:RP-RULE_ID}\",",
+      "  \"name\": \"${2:Rule Name}\",",
+      "  \"shortDescription\": {",
+      "    \"text\": \"${3:Short description}\"",
+      "  },",
+      "  \"helpUri\": \"${4:https://github.com/falconxa0-commits/reconpro/wiki}\",",
+      "  \"properties\": {",
+      "    \"security-severity\": \"${5:5.0}\"",
+      "  }",
+      "}"
+    ]
+  },
+  "SARIF runs skeleton (reconpro export shape)": {
+    "prefix": "sarif-runs",
+    "scope": "sarif",
+    "description": "Minimal SARIF log skeleton matching the output of `reconpro export report.sarif`.",
+    "body": [
+      "{",
+      "  \"$schema\": \"https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json\",",
+      "  \"version\": \"2.1.0\",",
+      "  \"runs\": [",
+      "    {",
+      "      \"tool\": {",
+      "        \"driver\": {",
+      "          \"name\": \"ReconPro\",",
+      "          \"version\": \"11.1.0\",",
+      "          \"rules\": []",
+      "        }",
+      "      },",
+      "      \"results\": []",
+      "    }",
+      "  ]",
+      "}"
+    ]
+  }
+}

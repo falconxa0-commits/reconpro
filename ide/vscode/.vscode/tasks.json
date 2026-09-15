@@ -1,0 +1,220 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "ReconPro: AST Analysis (workspace)",
+      "detail": "reconpro ast — Python/JS/TS vulnerability pattern scan of ${workspaceFolder}",
+      "type": "process",
+      "command": "${config:reconpro.pythonPath}",
+      "args": [
+        "-m",
+        "reconpro.cli",
+        "ast",
+        "${workspaceFolder}"
+      ],
+      "group": "test",
+      "options": {
+        "env": {
+          "COLUMNS": "200",
+          "PYTHONUNBUFFERED": "1"
+        }
+      },
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "clear": true
+      },
+      "problemMatcher": [
+        {
+          "owner": "reconpro-ast-critical",
+          "source": "reconpro-ast",
+          "fileLocation": [
+            "autoDetect",
+            "${workspaceFolder}"
+          ],
+          "pattern": {
+            "regexp": "^\\s*│\\s*CRITICAL\\s*│\\s*([^│]*?)\\s*│\\s*([^│]*?)\\s*│\\s*([^│]*?)\\s*│\\s*$",
+            "file": 1,
+            "code": 2,
+            "message": 3,
+            "severity": "error"
+          }
+        },
+        {
+          "owner": "reconpro-ast-high",
+          "source": "reconpro-ast",
+          "fileLocation": [
+            "autoDetect",
+            "${workspaceFolder}"
+          ],
+          "pattern": {
+            "regexp": "^\\s*│\\s*HIGH\\s*│\\s*([^│]*?)\\s*│\\s*([^│]*?)\\s*│\\s*([^│]*?)\\s*│\\s*$",
+            "file": 1,
+            "code": 2,
+            "message": 3,
+            "severity": "warning"
+          }
+        },
+        {
+          "owner": "reconpro-ast-medium",
+          "source": "reconpro-ast",
+          "fileLocation": [
+            "autoDetect",
+            "${workspaceFolder}"
+          ],
+          "pattern": {
+            "regexp": "^\\s*│\\s*MEDIUM\\s*│\\s*([^│]*?)\\s*│\\s*([^│]*?)\\s*│\\s*([^│]*?)\\s*│\\s*$",
+            "file": 1,
+            "code": 2,
+            "message": 3,
+            "severity": "warning"
+          }
+        },
+        {
+          "owner": "reconpro-ast-low",
+          "source": "reconpro-ast",
+          "fileLocation": [
+            "autoDetect",
+            "${workspaceFolder}"
+          ],
+          "pattern": {
+            "regexp": "^\\s*│\\s*LOW\\s*│\\s*([^│]*?)\\s*│\\s*([^│]*?)\\s*│\\s*([^│]*?)\\s*│\\s*$",
+            "file": 1,
+            "code": 2,
+            "message": 3,
+            "severity": "info"
+          }
+        }
+      ]
+    },
+    {
+      "label": "ReconPro: Secrets Scan (workspace)",
+      "detail": "reconpro secrets — env vars, .env files and hardcoded secrets in ${workspaceFolder}",
+      "type": "process",
+      "command": "${config:reconpro.pythonPath}",
+      "args": [
+        "-m",
+        "reconpro.cli",
+        "secrets",
+        "${workspaceFolder}"
+      ],
+      "group": "test",
+      "options": {
+        "env": {
+          "COLUMNS": "200",
+          "PYTHONUNBUFFERED": "1"
+        }
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      },
+      "problemMatcher": [
+        {
+          "owner": "reconpro-secrets-critical",
+          "source": "reconpro-secrets",
+          "pattern": {
+            "regexp": "^\\s*CRITICAL\\s+(.*)$",
+            "message": 1,
+            "severity": "error"
+          }
+        },
+        {
+          "owner": "reconpro-secrets-high",
+          "source": "reconpro-secrets",
+          "pattern": {
+            "regexp": "^\\s*HIGH\\s+(.*)$",
+            "message": 1,
+            "severity": "warning"
+          }
+        },
+        {
+          "owner": "reconpro-secrets-medium",
+          "source": "reconpro-secrets",
+          "pattern": {
+            "regexp": "^\\s*MEDIUM\\s+(.*)$",
+            "message": 1,
+            "severity": "warning"
+          }
+        },
+        {
+          "owner": "reconpro-secrets-low",
+          "source": "reconpro-secrets",
+          "pattern": {
+            "regexp": "^\\s*LOW\\s+(.*)$",
+            "message": 1,
+            "severity": "info"
+          }
+        }
+      ]
+    },
+    {
+      "label": "ReconPro: Doctor (health check)",
+      "detail": "reconpro doctor — local machine security health check (findings table → Problems)",
+      "type": "process",
+      "command": "${config:reconpro.pythonPath}",
+      "args": [
+        "-m",
+        "reconpro.cli",
+        "doctor"
+      ],
+      "group": "test",
+      "options": {
+        "env": {
+          "COLUMNS": "200",
+          "PYTHONUNBUFFERED": "1"
+        }
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      },
+      "problemMatcher": [
+        {
+          "owner": "reconpro-doctor-critical",
+          "source": "reconpro-doctor",
+          "pattern": {
+            "regexp": "^\\s*│\\s*CRITICAL\\s*│\\s*([^│]*?)\\s*│\\s*([^│]*?)\\s*│\\s*([^│]*?)\\s*│\\s*(\\d+)\\s*│",
+            "code": 2,
+            "message": 3,
+            "severity": "error"
+          }
+        },
+        {
+          "owner": "reconpro-doctor-high",
+          "source": "reconpro-doctor",
+          "pattern": {
+            "regexp": "^\\s*│\\s*HIGH\\s*│\\s*([^│]*?)\\s*│\\s*([^│]*?)\\s*│\\s*([^│]*?)\\s*│\\s*(\\d+)\\s*│",
+            "code": 2,
+            "message": 3,
+            "severity": "warning"
+          }
+        },
+        {
+          "owner": "reconpro-doctor-medium",
+          "source": "reconpro-doctor",
+          "pattern": {
+            "regexp": "^\\s*│\\s*MEDIUM\\s*│\\s*([^│]*?)\\s*│\\s*([^│]*?)\\s*│\\s*([^│]*?)\\s*│\\s*(\\d+)\\s*│",
+            "code": 2,
+            "message": 3,
+            "severity": "warning"
+          }
+        },
+        {
+          "owner": "reconpro-doctor-low",
+          "source": "reconpro-doctor",
+          "pattern": {
+            "regexp": "^\\s*│\\s*LOW\\s*│\\s*([^│]*?)\\s*│\\s*([^│]*?)\\s*│\\s*([^│]*?)\\s*│\\s*(\\d+)\\s*│",
+            "code": 2,
+            "message": 3,
+            "severity": "info"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+# Release engineering hygiene — never commit build byproducts or keys
+__pycache__/
+*.pyc
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.bench/
+.ruff_cache/
+
+# Ed25519 release PRIVATE key (public key tools/keys/release_key.pub IS
+# committed so verifiers can check dist/SHA256SUMS.ed25519 signatures).
+tools/keys/release_key.ed25519
+
+# Local env
+.env
+.venv/
+
+# Local archive of stale/legacy build products (not part of the release)
+.archive/

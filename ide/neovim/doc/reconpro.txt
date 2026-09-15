@@ -1,0 +1,115 @@
+*reconpro.txt*	ReconPro security scanner for Neovim
+
+			      RECONPRO					*reconpro*
+
+ReconPro runs the `reconpro` CLI (python -m reconpro.cli) inside Neovim: AST
+vulnerability scans, secrets detection and machine health checks, with
+results in the quickfix list. The CLI is always launched through
+|jobstart()| with an ARGV LIST — never a shell string.
+
+Type |gO| to see the table of contents.
+
+==============================================================================
+CONTENTS					*reconpro-contents*
+
+  1. Commands ................. |reconpro-commands|
+  2. Quickfix integration ..... |reconpro-quickfix|
+  3. Configuration ............ |reconpro-configuration|
+  4. Setup (lazy.nvim) ........ |reconpro-setup|
+  5. CLI quirks ............... |reconpro-quirks|
+
+==============================================================================
+1. COMMANDS					*reconpro-commands*
+
+*:ReconProScan*
+:ReconProScan[!] [dir]	Run `reconpro ast` on the current buffer's
+			directory (or [dir]) and fill the quickfix list
+			with the parsed Rich table findings. With [!] the
+			raw CLI output is also dumped into a scratch
+			console window. CRITICAL/HIGH map to quickfix "E",
+			MEDIUM to "W", everything else to "I".
+
+*:ReconProSecrets*
+:ReconProSecrets[!] [dir]	Run `reconpro secrets --json` on the current
+			buffer's directory (or [dir]) and fill the
+			quickfix list from the JSON findings.
+
+*:ReconProDoctor*
+:ReconProDoctor		Run `reconpro doctor --json` (local machine
+			health check): findings go to the quickfix list,
+			a summary (findings/score/grade) is notified.
+
+*:ReconProVersion*
+:ReconProVersion	Notify the version reported by `reconpro --version`.
+
+==============================================================================
+2. QUICKFIX INTEGRATION				*reconpro-quickfix*
+
+Results are pushed with `vim.fn.setqflist({}, "r", { items = entries })` and
+the quickfix window is opened automatically when findings exist. Each entry:
+
+  filename  the file from the CLI's table/JSON (scanned root for
+            machine-level findings)
+  lnum      1 (the ast table carries no real line numbers — see
+            |reconpro-quirks|)
+  type      E / W / I derived from CRITICAL / HIGH / MEDIUM / LOW
+  text      "[SEVERITY] title (evidence)"
+
+The parser first tries to decode the CLI output as JSON (whole-buffer, then
+per-line JSON Lines) and falls back to splitting Rich table rows on the
+literal box character "│".
+
+==============================================================================
+3. CONFIGURATION					*reconpro-configuration*
+
+Default configuration: >
+
+  python = exepath("python3") or "python3"
+  timeout = 120          -- seconds, then the job is jobstop()ed
+
+Override in your init.lua: >
+
+  require("reconpro").setup({
+    python = "/home/you/.venv/bin/python3",
+    timeout = 60,
+  })
+
+`python` must be an interpreter that can `import reconpro` (the plugin runs
+`<python> -m reconpro.cli ...`).
+
+==============================================================================
+4. SETUP (lazy.nvim)					*reconpro-setup*
+
+If the plugin lives in your repo checkout: >
+
+  {
+    dir = "~/src/reconpro/ide/neovim",
+    cmd = { "ReconProScan", "ReconProSecrets", "ReconProDoctor", "ReconProVersion" },
+    config = function()
+      require("reconpro").setup({ python = "/home/you/.venv/bin/python3" })
+    end,
+  }
+
+The plugin also works with any plugin manager that puts `lua/`, `plugin/`,
+`doc/` and `syntax/` on your runtimepath. Run `:helptags ALL` once so |:ReconProScan| and friends resolve.
+
+==============================================================================
+5. CLI QUIRKS					*reconpro-quirks*
+
+Verified against reconpro 11.1.0 — these are upstream CLI behaviours the
+plugin compensates for:
+
+  1. Human output (banner, Rich tables) is written to STDERR; machine output
+     (`--json`, `--version`) to STDOUT. Both streams are collected.
+  2. `reconpro ast <single-file>` reports "No vulnerabilities found" even for
+     vulnerable files (upstream routes single files through
+     analyze_directory, which no-ops on files) — :ReconProScan therefore
+     always targets the buffer's directory.
+  3. The ast table's "Line" column contains the first 6 characters of the
+     finding *evidence*, not a line number (upstream bug) — the parser keeps
+     it as the quickfix code label and pins lnum to 1.
+  4. The table's File column is truncated to the last 30 characters of the
+     path by the CLI, so very long paths may be shortened in quickfix
+     entries.
+
+ vim:tw=78:ts=8:noet:ft=help:norl:

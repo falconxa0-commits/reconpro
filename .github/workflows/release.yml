@@ -1,0 +1,66 @@
+# ReconPro Release — runs on v* tags.
+# Produces wheel+sdist, CycloneDX SBOM, SHA256SUMS, Ed25519 + GPG signatures
+# via tools/release_manager.py, then attaches everything to a GitHub Release.
+#
+# SECRET SETUP (one-time, documented):
+#   RELEASE_ED25519_HEX — 64 hex chars, the Ed25519 seed used to sign
+#   SHA256SUMS. Generate once locally:
+#       python tools/release_manager.py sign          # creates tools/keys/*
+#       cat tools/keys/release_key.ed25519            # -> paste into the secret
+#   Then add it as repository secret RELEASE_ED25519_HEX
+#   (Settings -> Secrets and variables -> Actions). NEVER commit
+#   tools/keys/release_key.ed25519 — keep it gitignored.
+#   Verifiers only need tools/keys/release_key.pub (hex public key).
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install build tooling
+        run: |
+          python -m pip install --upgrade pip
+          pip install build twine cryptography
+
+      - name: Build + SBOM + checksums + sign + verify
+        env:
+          RELEASE_ED25519_HEX: ${{ secrets.RELEASE_ED25519_HEX }}
+        run: |
+          python tools/release_manager.py all --reproducible
+
+      - name: Publish dry-run (metadata validation — never uploads)
+        run: |
+          python tools/release_manager.py publish-dry-run
+
+      - name: Create GitHub Release with artifacts
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            dist/*.whl
+            dist/*.tar.gz
+            dist/reconpro-*-sbom.cdx.json
+            dist/SHA256SUMS
+            dist/SHA256SUMS.ed25519
+            dist/SHA256SUMS.sig
+            dist/SHA256SUMS.asc
+            dist/RELEASE_MANIFEST.json
+            dist/reconpro-*-build-report.json
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

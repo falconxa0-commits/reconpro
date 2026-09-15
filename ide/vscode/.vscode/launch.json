@@ -1,0 +1,32 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run ReconPro extension (Extension Development Host)",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": [
+        "--extensionDevelopmentPath=${workspaceFolder}"
+      ],
+      "outFiles": [],
+      "preLaunchTask": "${defaultBuildTask}"
+    },
+    {
+      "name": "Attach to ReconPro extension host",
+      "type": "extensionHost",
+      "request": "attach",
+      "extensionId": "reconpro.reconpro"
+    },
+    {
+      "name": "ReconPro CLI: doctor --json (run under node debugger, inspect JSON)",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "program": "${workspaceFolder}/tools/validate.js",
+      "args": [
+        "--smoke"
+      ],
+      "console": "integratedTerminal"
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+# GitHub App manifest for "ReconPro Sentinel".
+#
+# Create the app from this manifest via:
+#   https://github.com/settings/apps/new?manifest=URL_ENCODED_MANIFEST
+# (GitHub Docs: "Creating a GitHub App from a manifest" — GitHub POSTs the
+# created app's id/key back to manifest.redirect_url as JSON.)
+#
+# Permission keys below are the VALID GitHub App permission names:
+#   contents: read            — read PR code to scan
+#   checks: write             — post ReconPro check runs / annotations
+#   security_events: write    — ingest SARIF into Code Scanning
+# Webhook events:
+#   pull_request              — scan opened/synchronize PRs
+#   security_and_analysis     — react to repo security settings changes
+name: ReconPro Sentinel
+description: >-
+  ReconPro Sentinel scans pull requests with the reconpro security CLI
+  (AST + secrets) and posts SARIF findings as check runs and Code Scanning
+  results.
+url: https://reconpro.example.com
+public: false
+
+hook_attributes:
+  url: https://reconpro.example.com/webhook/reconpro
+  active: true
+
+redirect_url: https://reconpro.example.com/github-app/callback
+setup_url: https://reconpro.example.com/github-app/setup
+
+default_events:
+  - pull_request
+  - security_and_analysis
+
+default_permissions:
+  contents: read
+  checks: write
+  security_events: write

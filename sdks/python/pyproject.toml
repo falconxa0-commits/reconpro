@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "reconpro-sdk"
+version = "0.1.0"
+description = "Thin Python SDK around the ReconPro CLI (stdlib only, no dependencies)"
+requires-python = ">=3.9"
+dependencies = []
+
+[tool.setuptools]
+packages = ["reconpro_sdk"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

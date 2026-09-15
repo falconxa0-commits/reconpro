@@ -1,0 +1,51 @@
+<idea-plugin>
+    <id>com.reconpro.intellij</id>
+    <name>ReconPro</name>
+    <vendor>reconpro</vendor>
+    <description><![CDATA[
+        ReconPro security scanner integration for IntelliJ Platform IDEs.<br/>
+        Runs the <code>reconpro</code> CLI (<code>python -m reconpro.cli</code>) via a ProcessBuilder ARGV LIST (never a shell string),
+        turns SARIF 2.1.0 output into in-editor annotations, and adds a Doctor health check.
+    ]]></description>
+
+    <!-- IntelliJ Platform 2024.1+ -->
+    <idea-version since-build="241"/>
+
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- Bottom-anchored tool window that renders scan results -->
+        <toolWindow id="ReconPro"
+                    anchor="bottom"
+                    icon="AllIcons.Toolwindows.ToolWindowMessages"
+                    factoryClass="com.reconpro.sdk.ReconProToolWindowFactory"
+                    canCloseContents="true"/>
+        <!-- Settings entry under Tools | ReconPro (python path + timeout) -->
+        <projectConfigurable id="reconpro.settings"
+                             parentId="tools"
+                             displayName="ReconPro"
+                             instance="com.reconpro.sdk.ReconProSettingsConfigurable"/>
+    </extensions>
+
+    <actions>
+        <group id="ReconPro.Menu"
+               text="ReconPro"
+               description="ReconPro security scanner actions"
+               popup="true">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+            <action id="ReconPro.ScanProject"
+                    class="com.reconpro.sdk.ReconProScanAction"
+                    text="Scan Project (AST + Secrets)"
+                    description="Run reconpro ast + secrets + dev on the project root and annotate from SARIF"/>
+            <action id="ReconPro.Doctor"
+                    class="com.reconpro.sdk.ReconProDoctorAction"
+                    text="Doctor: Health Check"
+                    description="Run reconpro doctor --json and show findings/score/grade"/>
+            <separator/>
+            <action id="ReconPro.Version"
+                    class="com.reconpro.sdk.ReconProVersionAction"
+                    text="Show CLI Version"
+                    description="Print the reconpro CLI version"/>
+        </group>
+    </actions>
+</idea-plugin>

@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReconPro Report — example.com</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#0a0a0f; color:#e0e0e0; font-family:'SF Mono','Fira Code',monospace; padding:40px; }
+  .container { max-width:1100px; margin:0 auto; }
+  h1 { font-size:28px; color:#fff; margin-bottom:4px; }
+  .subtitle { color:#666; font-size:14px; margin-bottom:30px; }
+  .header { display:flex; align-items:center; justify-content:space-between; padding:30px; background:#111118; border:1px solid #1a1a2e; border-radius:12px; margin-bottom:24px; }
+  .score-ring { flex-shrink:0; }
+  .header-info { flex:1; padding-left:30px; }
+  .score-big { font-size:48px; font-weight:800; color:#c0392b; }
+  .grade-big { font-size:28px; color:#c0392b; }
+  .stat-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin-bottom:24px; }
+  .stat-card { background:#111118; border:1px solid #1a1a2e; border-radius:8px; padding:16px; text-align:center; }
+  .stat-num { font-size:28px; font-weight:700; }
+  .stat-label { font-size:11px; color:#666; text-transform:uppercase; margin-top:4px; }
+  table { width:100%; border-collapse:collapse; background:#111118; border:1px solid #1a1a2e; border-radius:8px; overflow:hidden; }
+  th { text-align:left; padding:12px 16px; font-size:11px; text-transform:uppercase; color:#666; border-bottom:1px solid #1a1a2e; background:#0d0d14; }
+  td { padding:10px 16px; font-size:13px; border-bottom:1px solid #111; }
+  tr:hover { background:#15151f; }
+  .section-title { font-size:16px; color:#fff; margin:24px 0 12px; padding-left:12px; border-left:3px solid #c0392b; }
+  .modules { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+  .module-tag { background:#1a1a2e; color:#888; padding:4px 12px; border-radius:20px; font-size:12px; }
+  .badge-box { margin-top:24px; padding:16px; background:#111118; border:1px solid #1a1a2e; border-radius:8px; }
+  .badge-box code { color:#58a6ff; font-size:13px; }
+  .footer { text-align:center; color:#444; font-size:12px; margin-top:40px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>RECONPRO</h1>
+  <p class="subtitle">Security Assessment Report &mdash; Generated 2026-08-02 08:42:49</p>
+
+  <div class="header">
+    <div class="score-ring">
+      <svg width="200" height="200" viewBox="0 0 200 200">
+        <circle cx="100" cy="100" r="70" fill="none" stroke="#1a1a2e" stroke-width="12"/>
+        <path d="M 100 30 A 70 70 0 0 1 100.0 30.0 L 100 100 Z" fill="#c0392b" opacity="0.9"/>
+        <text x="100" y="95" text-anchor="middle" fill="white" font-size="36" font-weight="800">0</text>
+        <text x="100" y="120" text-anchor="middle" fill="#c0392b" font-size="20" font-weight="600">F</text>
+      </svg>
+    </div>
+    <div class="header-info">
+      <div style="color:#888;font-size:12px;text-transform:uppercase">Target</div>
+      <div style="font-size:24px;color:#fff;margin-bottom:16px">example.com</div>
+      <div class="modules">
+        <span class="module-tag">recon</span><span class="module-tag">vibesec</span><span class="module-tag">auth</span><span class="module-tag">chain</span><span class="module-tag">oblivion</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat-card"><div class="stat-num" style="color:#e74c3c">0</div><div class="stat-label">Critical</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:#e67e22">4</div><div class="stat-label">High</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:#f1c40f">13</div><div class="stat-label">Medium</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:#2ecc71">9</div><div class="stat-label">Low</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:#888">0</div><div class="stat-label">Info</div></div>
+  </div>
+
+  <div class="section-title">Findings (26)</div>
+  <table>
+    <thead><tr><th>Severity</th><th>Module</th><th>Category</th><th>Finding</th><th>Pts</th><th>Remediation</th></tr></thead>
+    <tbody>
+        <tr>
+          <td style="color:#e67e22;font-weight:600;text-transform:uppercase;font-size:12px">high</td>
+          <td style="color:#888">recon</td>
+          <td style="color:#888">security_headers</td>
+          <td>Missing HSTS header</td>
+          <td style="text-align:center;color:#f1c40f">-8</td>
+          <td style="color:#888;font-size:12px"></td>
+        </tr>
+        <tr>
+          <td style="color:#f1c40f;font-weight:600;text-transform:uppercase;font-size:12px">medium</td>
+          <td style="color:#888">recon</td>
+          <td style="color:#888">security_headers</td>
+          <td>Missing CSP header</td>
+          <td style="text-align:center;color:#f1c40f">-6</td>
+          <td style="color:#888;font-size:12px"></td>
+        </tr>
+        <tr>
+          <td style="color:#f1c40f;font-weight:600;text-transform:uppercase;font-size:12px">medium</td>
+          <td style="color:#888">recon</td>
+          <td style="color:#888">security_headers</td>
+          <td>Missing X-Content-Type-Options header</td>
+          <td style="text-align:center;color:#f1c40f">-4</td>
+          <td style="color:#888;font-size:12px"></td>
+        </tr>
+        <tr>
+          <td style="color:#f1c40f;font-weight:600;text-transform:uppercase;font-size:12px">medium</td>
+          <td style="color:#888">recon</td>
+          <td style="color:#888">security_headers</td>
+          <td>Missing X-Frame-Options header</td>
+          <td style="text-align:center;color:#f1c40f">-5</td>
+          <td style="color:#888;font-size:12px"></td>
+        </tr>
+        <tr>
+          <td style="color:#2ecc71;font-weight:600;text-transform:uppercase;font-size:12px">low</td>
+          <td style="color:#888">recon</td>
+          <td style="color:#888">security_headers</td>
+          <td>Missing Referrer-Policy header</td>
+          <td style="text-align:center;color:#f1c40f">-3</td>
+          <td style="color:#888;font-size:12px"></td>
+        </tr>
+        <tr>
+          <td style="color:#2ecc71;font-weight:600;text-transform:uppercase;font-size:12px">low</td>
+          <td style="color:#888">recon</td>
+          <td style="color:#888">security_headers</td>
+          <td>Missing Permissions-Policy header</td>
+          <td style="text-align:center;color:#f1c40f">-2</td>
+          <td style="color:#888;font-size:12px"></td>
+        </tr>
+        <tr>
+          <td style="color:#f1c40f;font-weight:600;text-transform:uppercase;font-size:12px">medium</td>
+          <td style="color:#888">recon</td>
+          <td style="color:#888">ports</td>
+          <td>Open port: 8080</td>
+          <td style="text-align:center;color:#f1c40f">-3</td>
+          <td style="color:#888;font-size:12px"></td>
+        </tr>
+        <tr>
+          <td style="color:#f1c40f;font-weight:600;text-transform:uppercase;font-size:12px">medium</td>
+          <td style="color:#888">recon</td>
+          <td style="color:#888">ports</td>
+          <td>Open port: 8443</td>
+          <td style="text-align:center;color:#f1c40f">-3</td>
+          <td style="color:#888;font-size:12px"></td>
+        </tr>
+        <tr>
+          <td style="color:#e67e22;font-weight:600;text-transform:uppercase;font-size:12px">high</td>
+          <td style="color:#888">vibesec</td>
+          <td style="color:#888">security_headers</td>
+          <td>Missing HSTS</td>
+          <td style="text-align:center;color:#f1c40f">-8</td>
+          <td style="color:#888;font-size:12px">Fix: Secure or remove Missing HSTS</td>
+        </tr>
+        <tr>
+          <td style="color:#f1c40f;font-weight:600;text-transform:uppercase;font-size:12px">medium</td>
+          <td style="color:#888">vibesec</td>
+          <td style="color:#888">security_headers</td>
+          <td>Missing CSP</td>
+          <td style="text-align:center;color:#f1c40f">-6</td>
+          <td style="color:#888;font-size:12px">Fix: Secure or remove Missing CSP</td>
+        </tr>
+        <tr>
+          <td style="color:#f1c40f;font-weight:600;text-transform:uppercase;font-size:12px">medium</td>
+          <td style="color:#888">vibesec</td>
+          <td style="color:#888">security_headers</td>
+          <td>Missing X-Content-Type-Options</td>
+          <td style="text-align:center;color:#f1c40f">-4</td>
+          <td style="color:#888;font-size:12px">Fix: Secure or remove Missing X-Content-Type-Options</td>
+        </tr>
+        <tr>
+          <td style="color:#2ecc71;font-weight:600;text-transform:uppercase;font-size:12px">low</td>
+          <td style="color:#888">vibesec</td>
+          <td style="color:#888">security_headers</td>
+          <td>Missing Referrer-Policy</td>
+          <td style="text-align:center;color:#f1c40f">-3</td>
+          <td style="color:#888;font-size:12px">Fix: Secure or remove Missing Referrer-Policy</td>
+        </tr>
+        <tr>
+          <td style="color:#2ecc71;font-weight:600;text-transform:uppercase;font-size:12px">low</td>
+          <td style="color:#888">vibesec</td>
+          <td style="color:#888">security_headers</td>
+          <td>Missing Permissions-Policy</td>
+          <td style="text-align:center;color:#f1c40f">-2</td>
+          <td style="color:#888;font-size:12px">Fix: Secure or remove Missing Permissions-Policy</td>
+        </tr>
+        <tr>
+          <td style="color:#e67e22;font-weight:600;text-transform:uppercase;font-size:12px">high</td>
+          <td style="color:#888">oblivion</td>
+          <td style="color:#888">security_headers</td>
+          <td>Missing HSTS</td>
+          <td style="text-align:center;color:#f1c40f">-5</td>
+          <td style="color:#888;font-size:12px">Add Strict-Transport-Security header with max-age >= 31536000</td>
+        </tr>
+        <tr>
+          <td style="color:#e67e22;font-weight:600;text-transform:uppercase;font-size:12px">high</td>
+          <td style="color:#888">oblivion</td>
+          <td style="color:#888">security_headers</td>
+          <td>Missing CSP</td>
+          <td style="text-align:center;color:#f1c40f">-5</td>
+          <td style="color:#888;font-size:12px">Implement Content-Security-Policy to prevent XSS</td>
+        </tr>
+        <tr>
+          <td style="color:#f1c40f;font-weight:600;text-transform:uppercase;font-size:12px">medium</td>
+          <td style="color:#888">oblivion</td>
+          <td style="color:#888">security_headers</td>
+          <td>Missing X-Content-Type-Options</td>
+          <td style="text-align:center;color:#f1c40f">-5</td>
+          <td style="color:#888;font-size:12px">Set X-Content-Type-Options: nosniff</td>
+        </tr>
+        <tr>
+          <td style="color:#f1c40f;font-weight:600;text-transform:uppercase;font-size:12px">medium</td>
+          <td style="color:#888">oblivion</td>
+          <td style="color:#888">security_headers</td>
+          <td>Missing X-Frame-Options</td>
+          <td style="text-align:center;color:#f1c40f">-5</td>
+          <td style="color:#888;font-size:12px">Set X-Frame-Options: DENY or SAMEORIGIN</td>
+        </tr>
+        <tr>
+          <td style="color:#2ecc71;font-weight:600;text-transform:uppercase;font-size:12px">low</td>
+          <td style="color:#888">oblivion</td>
+          <td style="color:#888">security_headers</td>
+          <td>Missing Referrer-Policy</td>
+          <td style="text-align:center;color:#f1c40f">-5</td>
+          <td style="color:#888;font-size:12px">Set Referrer-Policy: strict-origin-when-cross-origin</td>
+        </tr>
+        <tr>
+          <td style="color:#2ecc71;font-weight:600;text-transform:uppercase;font-size:12px">low</td>
+          <td style="color:#888">oblivion</td>
+          <td style="color:#888">security_headers</td>
+          <td>Missing Permissions-Policy</td>
+          <td style="text-align:center;color:#f1c40f">-5</td>
+          <td style="color:#888;font-size:12px">Set Permissions-Policy to restrict browser features</td>
+        </tr>
+        <tr>
+          <td style="color:#2ecc71;font-weight:600;text-transform:uppercase;font-size:12px">low</td>
+          <td style="color:#888">oblivion</td>
+          <td style="color:#888">security_headers</td>
+          <td>Missing X-XSS-Protection</td>
+          <td style="text-align:center;color:#f1c40f">-5</td>
+          <td style="color:#888;font-size:12px">Set X-XSS-Protection: 0 (modern browsers)</td>
+        </tr>
+        <tr>
+          <td style="color:#f1c40f;font-weight:600;text-transform:uppercase;font-size:12px">medium</td>
+          <td style="color:#888">oblivion</td>
+          <td style="color:#888">security_headers</td>
+          <td>Missing COOP</td>
+          <td style="text-align:center;color:#f1c40f">-5</td>
+          <td style="color:#888;font-size:12px">Set Cross-Origin-Opener-Policy: same-origin</td>
+        </tr>
+        <tr>
+          <td style="color:#f1c40f;font-weight:600;text-transform:uppercase;font-size:12px">medium</td>
+          <td style="color:#888">oblivion</td>
+          <td style="color:#888">security_headers</td>
+          <td>Missing CORP</td>
+          <td style="text-align:center;color:#f1c40f">-5</td>
+          <td style="color:#888;font-size:12px">Set Cross-Origin-Resource-Policy: same-origin</td>
+        </tr>
+        <tr>
+          <td style="color:#f1c40f;font-weight:600;text-transform:uppercase;font-size:12px">medium</td>
+          <td style="color:#888">oblivion</td>
+          <td style="color:#888">security_headers</td>
+          <td>Missing COEP</td>
+          <td style="text-align:center;color:#f1c40f">-5</td>
+          <td style="color:#888;font-size:12px">Set Cross-Origin-Embedder-Policy: require-corp</td>
+        </tr>
+        <tr>
+          <td style="color:#f1c40f;font-weight:600;text-transform:uppercase;font-size:12px">medium</td>
+          <td style="color:#888">oblivion</td>
+          <td style="color:#888">security_headers</td>
+          <td>Missing Cache-Control</td>
+          <td style="text-align:center;color:#f1c40f">-5</td>
+          <td style="color:#888;font-size:12px">Set Cache-Control: no-store for sensitive pages</td>
+        </tr>
+        <tr>
+          <td style="color:#2ecc71;font-weight:600;text-transform:uppercase;font-size:12px">low</td>
+          <td style="color:#888">oblivion</td>
+          <td style="color:#888">security_headers</td>
+          <td>Missing Pragma</td>
+          <td style="text-align:center;color:#f1c40f">-5</td>
+          <td style="color:#888;font-size:12px">Set Pragma: no-cache for sensitive pages</td>
+        </tr>
+        <tr>
+          <td style="color:#2ecc71;font-weight:600;text-transform:uppercase;font-size:12px">low</td>
+          <td style="color:#888">oblivion</td>
+          <td style="color:#888">info_disclosure</td>
+          <td>Server version disclosure</td>
+          <td style="text-align:center;color:#f1c40f">-2</td>
+          <td style="color:#888;font-size:12px">Remove or obfuscate the server header.</td>
+        </tr></tbody>
+  </table>
+
+  <div class="badge-box">
+    <div style="color:#666;font-size:12px;margin-bottom:8px">GITHUB README BADGE</div>
+    <code>![ReconPro F](https://img.shields.io/badge/ReconPro-F-red?style=for-the-badge&labelColor=000000)</code>
+  </div>
+
+  <div class="footer">Generated by ReconPro v4.0.0 &mdash; Eleven Blades. One Target. One Verdict.</div>
+</div>
+</body>
+</html>

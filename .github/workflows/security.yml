@@ -1,0 +1,81 @@
+# ReconPro Security — daily scheduled audit.
+# 1. AST security scan: gate on NEW findings vs the baseline, and also run
+#    STRICT mode (continue-on-error) to show the target state — strict turns
+#    green as agent 7-a's fixes land and the baseline shrinks to zero.
+# 2. Dependency audit via pip-audit (falls back to a requirements pinning
+#    check if pip-audit cannot be installed offline).
+# 3. Uploads the generated SARIF report.
+name: Security
+
+on:
+  schedule:
+    - cron: "0 3 * * *" # daily 03:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install package
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+
+      - name: Security AST scan — gate on NEW findings (baseline mode)
+        run: |
+          python tools/security_scan.py \
+            --baseline-file tools/security_baseline.json \
+            --sarif-out security_scan.sarif
+
+      - name: Security AST scan — strict mode (target state; informational)
+        continue-on-error: true
+        run: |
+          python tools/security_scan.py --strict
+
+      - name: Dependency audit (pip-audit, with pinning-check fallback)
+        run: |
+          if pip install pip-audit; then
+            pip-audit -r requirements.txt --strict
+          else
+            echo "pip-audit unavailable — falling back to requirements pinning check"
+            python - <<'EOF'
+            import re
+            from pathlib import Path
+            reqs = [l.split("#")[0].strip() for l in
+                    Path("requirements.txt").read_text().splitlines()]
+            reqs = [r for r in reqs if r]
+            unpinned = [r for r in reqs if "==" not in r]
+            print(f"{len(reqs)} requirements, {len(unpinned)} not == pinned:")
+            for r in unpinned:
+                print(f"  UNPINNED: {r}")
+            print("NOTE: unpinned ranges limit pip-audit reproducibility; "
+                  "pin with == or use a lockfile for hermetic deploys.")
+            EOF
+          fi
+
+      - name: Upload SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: security_scan.sarif
+        continue-on-error: true
+
+      - name: Upload SARIF artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-sarif
+          path: security_scan.sarif
+          if-no-files-found: ignore

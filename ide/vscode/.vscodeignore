@@ -1,0 +1,10 @@
+.vscode/**
+tools/**
+node_modules/**
+**/*.map
+.gitignore
+.git/**
+RECONPRO.md
+CHANGELOG.md
+**/test/**
+**/.DS_Store

@@ -1,0 +1,141 @@
+name: 'ReconPro Scan'
+description: >-
+  Run ReconPro (reconpro CLI) on your checkout: AST vulnerability analysis,
+  secrets scan and a project (dev) scan, then export a SARIF 2.1.0 report,
+  upload it as a workflow artifact and ingest it into GitHub Code Scanning.
+author: 'reconpro'
+
+branding:
+  icon: 'shield'
+  color: 'green'
+
+inputs:
+  target:
+    description: 'File or directory to scan (passed to reconpro ast/secrets/dev).'
+    required: false
+    default: '.'
+  workspace:
+    description: 'Working directory for the CLI and output files.'
+    required: false
+    default: ${{ github.workspace }}
+  format:
+    description: >-
+      Export format for `reconpro export` — extension-driven: sarif, json, md
+      or html. SARIF ingestion only runs when this is "sarif".
+    required: false
+    default: 'sarif'
+  timeout:
+    description: 'Seconds each reconpro invocation may run (GNU timeout).'
+    required: false
+    default: '300'
+  python-version:
+    description: 'Python version for actions/setup-python.'
+    required: false
+    default: '3.11'
+
+outputs:
+  sarif-path:
+    description: 'Path of the exported report (relative to inputs.workspace).'
+    value: ${{ steps.export.outputs.sarif-path }}
+  secrets-json-path:
+    description: 'Path of the secrets --json listing (relative to inputs.workspace).'
+    value: ${{ steps.secrets.outputs.secrets-json-path }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: 'Set up Python'
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python-version }}
+
+    - name: 'Install reconpro CLI'
+      shell: bash
+      working-directory: ${{ inputs.workspace }}
+      run: |
+        set -euo pipefail
+        # Install the scanner: from this repo when it IS reconpro,
+        # from PyPI otherwise. Override with job env RECONPRO_INSTALL_SPEC
+        # (e.g. "reconpro==11.1.0" or a local wheel path).
+        if [ -n "${RECONPRO_INSTALL_SPEC:-}" ]; then
+          pip install --quiet "$RECONPRO_INSTALL_SPEC"
+        elif [ -f pyproject.toml ] && grep -q '^name = "reconpro"' pyproject.toml; then
+          pip install --quiet .
+        else
+          pip install --quiet reconpro
+        fi
+        python -m reconpro.cli --version
+
+    - name: 'ReconPro AST analysis'
+      shell: bash
+      working-directory: ${{ inputs.workspace }}
+      env:
+        RECONPRO_TARGET: ${{ inputs.target }}
+        RECONPRO_TIMEOUT: ${{ inputs.timeout }}
+      run: |
+        set -uo pipefail
+        # Human output (Rich tables) arrives on STDERR by design — it lands in the step log.
+        timeout "$RECONPRO_TIMEOUT" python -m reconpro.cli ast "$RECONPRO_TARGET"
+        echo "ast exit=$?"
+
+    - name: 'ReconPro secrets scan'
+      id: secrets
+      shell: bash
+      working-directory: ${{ inputs.workspace }}
+      env:
+        RECONPRO_TARGET: ${{ inputs.target }}
+        RECONPRO_TIMEOUT: ${{ inputs.timeout }}
+      run: |
+        set -uo pipefail
+        # JSON goes to STDOUT, banner to STDERR.
+        timeout "$RECONPRO_TIMEOUT" python -m reconpro.cli secrets "$RECONPRO_TARGET" --json > reconpro-secrets.json
+        python - <<'EOF'
+        import json
+        with open("reconpro-secrets.json", encoding="utf-8") as fp:
+            findings = json.load(fp)
+        print(f"reconpro secrets: {len(findings)} finding(s)")
+        for f in findings[:20]:
+            print(f"  {f.get('severity', '?').upper():8} {f.get('title', '')} [{f.get('asset', '')}]")
+        EOF
+        echo "secrets-json-path=reconpro-secrets.json" >> "$GITHUB_OUTPUT"
+
+    - name: 'ReconPro project scan (dev — seeds the SARIF export)'
+      shell: bash
+      working-directory: ${{ inputs.workspace }}
+      env:
+        RECONPRO_TARGET: ${{ inputs.target }}
+        RECONPRO_TIMEOUT: ${{ inputs.timeout }}
+      run: |
+        set -uo pipefail
+        # `dev` saves the "last scan" that `export` serialises.
+        timeout "$RECONPRO_TIMEOUT" python -m reconpro.cli dev "$RECONPRO_TARGET"
+        echo "dev exit=$?"
+
+    - name: 'Export report'
+      id: export
+      shell: bash
+      working-directory: ${{ inputs.workspace }}
+      env:
+        RECONPRO_FORMAT: ${{ inputs.format }}
+      run: |
+        set -euo pipefail
+        report="reconpro-report.$RECONPRO_FORMAT"
+        python -m reconpro.cli export "$report"
+        test -f "$report"
+        echo "sarif-path=$report" >> "$GITHUB_OUTPUT"
+
+    - name: 'Upload report artifact'
+      uses: actions/upload-artifact@v4
+      with:
+        name: reconpro-report
+        path: |
+          ${{ inputs.workspace }}/reconpro-report.*
+          ${{ inputs.workspace }}/reconpro-secrets.json
+        if-no-files-found: warn
+
+    - name: 'Upload SARIF to GitHub Code Scanning'
+      if: ${{ inputs.format == 'sarif' }}
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: ${{ inputs.workspace }}/reconpro-report.sarif
+        category: '/reconpro'

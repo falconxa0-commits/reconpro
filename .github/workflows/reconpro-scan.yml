@@ -1,0 +1,31 @@
+name: ReconPro Scan (demo)
+
+# Demo workflow for the composite action at ./actions/reconpro-scan.
+# PHOENIX 7-d: this file was created by task 7-d (the .github/workflows
+# directory did not exist when 7-d started; 7-b may add other workflows).
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read          # checkout + read code
+  security-events: write  # github/codeql-action/upload-sarif ingestion
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: ReconPro (ast + secrets + dev + SARIF)
+        uses: ./actions/reconpro-scan
+        with:
+          target: .
+          workspace: ${{ github.workspace }}
+          format: sarif
+          timeout: '300'
+          python-version: '3.11'

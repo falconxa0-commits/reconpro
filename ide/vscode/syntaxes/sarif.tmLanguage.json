@@ -1,0 +1,62 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "SARIF",
+  "scopeName": "source.sarif.json",
+  "fileTypes": ["sarif", "sarif.json"],
+  "patterns": [
+    {
+      "include": "#sevKeys"
+    },
+    {
+      "include": "#sarifKeys"
+    },
+    {
+      "include": "#value"
+    }
+  ],
+  "repository": {
+    "sevKeys": {
+      "match": "\"(level|security-severity|severity)\"\\s*:",
+      "name": "keyword.other.severity.sarif.json"
+    },
+    "sarifKeys": {
+      "match": "\"(\\$schema|version|runs|tool|driver|rules|results|ruleId|level|message|locations|physicalLocation|artifactLocation|uri|region|startLine|startColumn|endLine|endColumn|properties|shortDescription|fullDescription|helpUri|markdown|text|invocations|id|name|remediation|category|module|evidence)\"\\s*:",
+      "name": "support.constant.key.sarif.json"
+    },
+    "value": {
+      "patterns": [
+        {
+          "match": "\":\\s*\"(error)\"",
+          "name": "invalid.illegal.error.sarif.json"
+        },
+        {
+          "match": "\":\\s*\"(warning|note)\"",
+          "name": "constant.character.warning.sarif.json"
+        },
+        {
+          "match": "\":\\s*\"(CRITICAL|HIGH)\"",
+          "name": "invalid.illegal.sarif.json"
+        },
+        {
+          "match": "\":\\s*\"(MEDIUM|LOW|INFO)\"",
+          "name": "constant.character.sarif.json"
+        },
+        {
+          "match": "\"(https?://[^\"]+)\"",
+          "name": "string.regexp.url.sarif.json"
+        },
+        {
+          "match": "\\b(RP-[A-Z0-9_]+)\\b",
+          "name": "entity.name.tag.ruleid.sarif.json"
+        },
+        {
+          "match": "\\b(2\\.1\\.0)\\b",
+          "name": "constant.numeric.version.sarif.json"
+        },
+        {
+          "include": "source.json"
+        }
+      ]
+    }
+  }
+}

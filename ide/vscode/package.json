@@ -1,0 +1,114 @@
+{
+  "name": "reconpro",
+  "displayName": "ReconPro — Security Scanner",
+  "description": "ReconPro security scanner integration: AST code analysis, secrets scan and doctor health check for your workspace, with SARIF-driven diagnostics.",
+  "version": "0.1.0",
+  "publisher": "reconpro",
+  "license": "MIT",
+  "private": true,
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Linters",
+    "Programming Languages",
+    "Security"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/falconxa0-commits/reconpro"
+  },
+  "activationEvents": [
+    "onCommand:reconpro.scanWorkspace",
+    "onCommand:reconpro.doctor",
+    "onCommand:reconpro.version"
+  ],
+  "main": "./src/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "reconpro.scanWorkspace",
+        "title": "Scan Workspace (AST + Secrets)",
+        "category": "ReconPro"
+      },
+      {
+        "command": "reconpro.doctor",
+        "title": "Doctor: Health Check (JSON)",
+        "category": "ReconPro"
+      },
+      {
+        "command": "reconpro.version",
+        "title": "Show Version",
+        "category": "ReconPro"
+      }
+    ],
+    "configuration": {
+      "title": "ReconPro",
+      "properties": {
+        "reconpro.pythonPath": {
+          "type": "string",
+          "default": "python3",
+          "markdownDescription": "Python interpreter used to run the `reconpro` CLI (`<pythonPath> -m reconpro.cli ...`). Absolute path recommended when using a virtualenv, e.g. `/home/you/.venv/bin/python3`."
+        },
+        "reconpro.timeoutSec": {
+          "type": "number",
+          "default": 120,
+          "minimum": 5,
+          "maximum": 3600,
+          "description": "Maximum wall-clock seconds for each reconpro CLI invocation before the child process is killed."
+        }
+      }
+    },
+    "problemMatchers": [
+      {
+        "name": "reconpro-table",
+        "label": "ReconPro findings table (Rich)",
+        "owner": "reconpro",
+        "source": "reconpro",
+        "fileLocation": [
+          "autoDetect",
+          "${workspaceFolder}"
+        ],
+        "pattern": [
+          {
+            "regexp": "^\\s*│\\s*(CRITICAL|HIGH|MEDIUM|LOW)\\s*│\\s*(\\S.*?)\\s*│\\s*(\\S.*?)\\s*│\\s*(\\S.*?)\\s*│\\s*$",
+            "severity": 1,
+            "file": 2,
+            "code": 3,
+            "message": 4
+          }
+        ]
+      }
+    ],
+    "languages": [
+      {
+        "id": "sarif",
+        "aliases": [
+          "SARIF",
+          "sarif"
+        ],
+        "extensions": [
+          ".sarif",
+          ".sarif.json"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "sarif",
+        "scopeName": "source.sarif.json",
+        "path": "./syntaxes/sarif.tmLanguage.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "sarif",
+        "path": "./snippets/sarif.json"
+      }
+    ]
+  },
+  "scripts": {
+    "validate": "node tools/validate.js"
+  }
+}
