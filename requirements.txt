@@ -5,4 +5,4 @@ rich>=13.0.0
 # ReconPro UNIFIED — Development / Test Dependencies
 # ─────────────────────────────────────────────
 pytest>=8.0.0
-pytest-cov>=5.0.0
+pytest-cov>=7.1.0
