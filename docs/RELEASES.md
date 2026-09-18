@@ -22,15 +22,17 @@ Both v11.2.0 keys are built and applied in CI via repository secrets.
 
 | Field | Value |
 |---|---|
-| Commit | (recorded in the release's `PROVENANCE.json`; tag `v11.2.0`) |
-| Wheel | `reconpro-11.2.0-py3-none-any.whl` — hash in release `SHA256SUMS` |
-| Sdist | `reconpro-11.2.0.tar.gz` (deterministically normalized; byte-reproducible) |
-| SBOM | `reconpro-11.2.0-sbom.cdx.json` (CycloneDX 1.5, licenses + audit metadata) |
-| Signatures | `SHA256SUMS.ed25519` + `SHA256SUMS.sig` (Ed25519) + `SHA256SUMS.asc` (GPG `5F3D637E…`) |
-| Provenance | `PROVENANCE.json` — 6-transition trust chain, machine-verified |
-| Reproducible | ✅ wheel + sdist byte-identical across independent builds (double-build in release gate) |
-| Gates passed | `tools/release_gate.sh` all 8 stages (source-clean, reproducible build, full test suite, AST security baseline, SBOM, hashes, signatures + provenance, fresh-machine release tests) |
-| Release tests | fresh venv install, CLI smoke (unknown-cmd exit 2), honest-scan (UNREACHABLE→grade U, no HIGH), JSON + SARIF truth fields, SHA256SUMS re-verify — all passed |
+| Commit | `9cd481b` (tag `v11.2.0`; built + signed in CI by the Release workflow, run 35304263393) |
+| Wheel | `reconpro-11.2.0-py3-none-any.whl` — sha256 `0b7cb0e96423f343…` (full hash in release `SHA256SUMS`) |
+| Sdist | `reconpro-11.2.0.tar.gz` — sha256 `8b1386c274691d98…` (deterministically normalized; byte-reproducible) |
+| SBOM | `reconpro-11.2.0-sbom.cdx.json` (CycloneDX 1.5; per-component SPDX licenses; vulnerability-audit metadata) |
+| Signatures | `SHA256SUMS.ed25519` + `.sig` (Ed25519, rotated key `5a6bc09f…`) + `SHA256SUMS.asc` (GPG `5F3D637E…` — **verified Good signature against the published key**) |
+| Provenance | `PROVENANCE.json` — 6-transition trust chain (developer→source→build→artifact→signature→user) |
+| Reproducible | ✅ wheel + sdist byte-identical across independent builds (double-build inside `release_manager.py build --reproducible`) |
+| Gates passed | CI (chunked suite) ✓ · SDKs (Go/Rust/TypeScript) ✓ · ReconPro Scan ✓ · Release workflow `all --reproducible` + `publish-dry-run` ✓ |
+| Release tests | `tools/release_test.sh` 6/6 on the built wheel AND on the published PyPI package (`RECONPRO_TEST_PYPI=1`) — fresh venv install, CLI smoke incl. unknown-cmd exit 2, honest-scan (UNREACHABLE_TARGET → grade U, no HIGH), JSON + SARIF truth fields, SHA256SUMS re-verify |
+| Post-publish audit | PyPI wheel + sdist downloaded and proven **byte-identical** to the signed GitHub release assets (sha256 match against the verified `SHA256SUMS`) |
+| PyPI | https://pypi.org/project/reconpro/11.2.0/ |
 
 ### v11.1.0 — 2026-09-17
 
