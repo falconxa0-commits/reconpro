@@ -83,7 +83,7 @@ Usage:
     reconpro benchmark                      # Run benchmarks
 """
 
-__version__ = "11.1.0"
+__version__ = "11.2.0"
 __all__ = ["scan", "ReconProResult", "audit_scan", "__version__"]
 
 # ── Lazy imports (PEP 562) ────────────────────────────────────────────────

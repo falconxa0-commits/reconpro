@@ -9,7 +9,7 @@ THIS FILE IS THE CANONICAL DEFINITION. Do NOT duplicate these values elsewhere.
 from __future__ import annotations
 
 # ── Version ───────────────────────────────────────────────────────────
-__version__ = "11.1.0"
+__version__ = "11.2.0"
 
 # ── Severity System ────────────────────────────────────────────────────
 # Canonical ordering: lower numeric value = higher severity
