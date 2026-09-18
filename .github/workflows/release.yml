@@ -41,7 +41,21 @@ jobs:
       - name: Build + SBOM + checksums + sign + verify
         env:
           RELEASE_ED25519_HEX: ${{ secrets.RELEASE_ED25519_HEX }}
+          GPG_PRIVATE_KEY_ARMORED: ${{ secrets.GPG_PRIVATE_KEY_ARMORED }}
         run: |
+          # Import the persistent GPG release key (fingerprint 5F3D 637E
+          # FDE1 E8F5 6568 BEE0 2331 2E75 1E3F 9F89, published at
+          # docs/keys/reconpro-release-5F3D637E.asc) so every release is
+          # GPG-signed with the SAME key users can verify against — the
+          # v11.1.0 release used an ephemeral runner key and its public
+          # key was never published.
+          if [ -n "$GPG_PRIVATE_KEY_ARMORED" ]; then
+            echo "$GPG_PRIVATE_KEY_ARMORED" | gpg --batch --import
+            gpg --batch --list-secret-keys --with-colons \
+              "ReconPro Release <release@reconpro.local>" | grep '^fpr' | head -1
+          else
+            echo "WARNING: GPG_PRIVATE_KEY_ARMORED secret not set — GPG signature will use an ephemeral key (Ed25519 remains authoritative)"
+          fi
           python tools/release_manager.py all --reproducible
 
       - name: Publish dry-run (metadata validation — never uploads)
@@ -61,6 +75,7 @@ jobs:
             dist/SHA256SUMS.sig
             dist/SHA256SUMS.asc
             dist/RELEASE_MANIFEST.json
+            dist/PROVENANCE.json
             dist/reconpro-*-build-report.json
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
