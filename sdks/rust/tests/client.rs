@@ -18,7 +18,16 @@ fn write_stub(body: &str) -> String {
         .join(format!("reconpro-sdk-test-{}-{}", std::process::id(), seq));
     std::fs::create_dir_all(&dir).expect("create temp dir");
     let path = dir.join("reconpro");
-    std::fs::write(&path, format!("#!/bin/sh\n{body}")).expect("write stub");
+    // Write + fsync + drop: on overlayfs-backed CI runners, executing a
+    // freshly-written file can transiently fail with ETXTBSY ("Text file
+    // busy") because the copy-up is deferred. sync_all() forces it.
+    {
+        use std::io::Write;
+        let mut f = std::fs::File::create(&path).expect("create stub");
+        f.write_all(format!("#!/bin/sh\n{body}").as_bytes())
+            .expect("write stub");
+        f.sync_all().expect("sync stub");
+    }
     #[cfg(unix)]
     {
         use std::os::unix::fs::PermissionsExt;
