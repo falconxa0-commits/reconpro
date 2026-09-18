@@ -27,7 +27,12 @@ fi
 
 set -e
 cargo build --all-targets
-cargo test
+# --test-threads=1: the GitHub-hosted runner's /tmp intermittently returns
+# ETXTBSY ("Text file busy") when several freshly-written stub scripts are
+# exec'd concurrently (two CI flakes observed; not reproducible on other
+# hosts even with 24 parallel write+exec threads). Sequential execution
+# removes the contention without weakening any assertion.
+cargo test -- --test-threads=1
 cargo run --example basic            # offline *.invalid demo by default
 cargo run --example export
 cargo run --example error-handling
