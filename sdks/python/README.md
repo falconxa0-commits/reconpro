@@ -1,35 +1,74 @@
-# reconpro-sdk (Python)
+# reconpro-sdk (Python) — Stable
 
-Thin, dependency-free Python wrapper around the ReconPro CLI (`python -m reconpro.cli`).
-Every call shells out with an **argument list** (never a shell string).
+Typed, **stdlib-only** Python SDK around the ReconPro CLI (>= 11.2.0). Every
+call spawns `reconpro <command> --json` with an **argument list** (never a
+shell string) and parses the JSON contract from STDOUT; the CLI's pretty UI
+goes to STDERR and is captured only for error reporting.
+
+Stability tier: **Stable** — versioning & compatibility policy:
+[`../POLICY.md`](../POLICY.md).
+
+## Install / import
+
+No dependencies (Python >= 3.9). From a checkout:
+
+```python
+sys.path.insert(0, "sdks/python")           # or pip install . from this dir
+from reconpro_sdk import ReconProClient, SdkError
+```
 
 ## API
+
 | Method | Returns | Notes |
 |---|---|---|
-| `version()` | `str` | e.g. `"ReconPro 11.1.0"` |
-| `doctor()` | `dict` | parsed JSON of `doctor --json` |
-| `history(target=None, limit=10)` | `str` | raw text — CLI quirk: `history` has **no** `--json` flag (human table on STDERR; `history --json` exits 2) |
-| `scan(target)` | `dict` | network; targets validated client-side (shell metacharacters rejected) |
-| `export(path, format="sarif")` | `str` | CLI `export` subcommand; format from extension (`.sarif/.md/.json/.html`) — needs a previous scan |
+| `ReconProClient(binary_path=None, timeout=None)` | — | binary via arg → `RECONPRO_BINARY` env → `"reconpro"` on PATH; timeout via arg → `RECONPRO_TIMEOUT` env → 300 s |
+| `version()` | `str` | verification ping (`reconpro --version`), e.g. `"ReconPro 11.2.0"` |
+| `scan(target, *, output_file=None, modules=None, insecure=False)` | `ScanResult` | remote scan; `output_file` persists the JSON via CLI `-o` |
+| `vibesec(target, *, output_file=None)` | `ScanResult` | vibesec module scan |
+| `audit()` | `ScanResult` | local host/dev audit (offline) |
+| `dev(path=".")` | `ScanResult` | scan a local directory (offline) |
+| `doctor()` | `ScanResult` | local health check (offline) |
+| `export(path, format="sarif")` | `str` | `reconpro export <path>` (format from extension; appended when missing); returns path written |
 
-## Config
-- `RECONPRO_PYTHON` (default `/home/z/.venv/bin/python3`) — python executable
-- `RECONPRO_ROOT` (default `/home/z/my-project/download/reconpro-github`) — subprocess cwd
-- `RECONPRO_TIMEOUT` (default `120` seconds)
-- Failures raise `SdkError` with `.exit_code`, `.stderr`, `.command`.
+`ScanResult` is a frozen dataclass: `target`, `modules_run`, `total_findings`,
+`severity_counts`, `total_score`, `grade`, `findings[]` (each `Finding` has the
+full truth-layer fields incl. `confidence` and `verification_state`),
+`target_validation` (`state` / `dns_resolved` / `reachable` / `http_ok` /
+`tls_valid` / `details` / `checked_at`, `None` for local scans),
+`scan_metadata` (`scanner` / `started_at` / `duration_s` / `result`), plus
+`.raw` (the complete parsed JSON dict — unknown future keys stay accessible)
+and helpers `.unreachable`, `.findings_by_severity(sev)`.
+
+## Errors — structured `SdkError`
+
+| `.code` | Raised when | Extras |
+|---|---|---|
+| `BIN_NOT_FOUND` | binary missing / not executable | |
+| `TIMEOUT` | per-call timeout exceeded | |
+| `NON_ZERO_EXIT` | CLI exit != 0 | `.exit_code` (0/1/2/130 contract), `.stderr` |
+| `INVALID_JSON` | exit 0 but stdout not JSON | `.stderr` carries stdout head |
+| `INVALID_TARGET` (`TargetValidationError`) | shell metacharacters in target (defence in depth) | |
+| `UNSUPPORTED_FORMAT` (`UnsupportedFormatError`) | export format not sarif/md/json/html | |
 
 ## Run tests
+
 ```
-cd /home/z/my-project/download/reconpro-github
-/home/z/.venv/bin/python3 -m pytest sdks/python/tests -q
+/home/z/tmp-capture/rp-dev/bin/python -m pytest sdks/python/tests -q
 ```
-Status: **TESTED** — 5 passed, 1 skipped (`test_scan`, reason="network").
+CLI-backed tests auto-skip when no `reconpro` binary is found
+(`RECONPRO_BINARY` env → PATH → known venv paths); everything else is hermetic
+(shell-stub binaries). The truth-layer contract test scans a nonexistent
+`*.invalid` target — fully offline, instant, and asserts `grade == "U"` +
+`target_validation.state == UNREACHABLE_TARGET`.
 
 ## Run example
+
 ```
-/home/z/.venv/bin/python3 sdks/python/examples/basic.py --offline
+/home/z/tmp-capture/rp-dev/bin/python sdks/python/examples/basic.py            # offline .invalid demo
+/home/z/tmp-capture/rp-dev/bin/python sdks/python/examples/basic.py example.com  # live scan
 ```
 
 ## Files
-`reconpro_sdk/` (client, exceptions), `tests/test_client.py`, `examples/basic.py`, `pyproject.toml`.
-`export()` is implemented but **untested** (requires a prior scan in history; no network scans were run here).
+`reconpro_sdk/` (`client.py`, `models.py`, `exceptions.py`, `__init__.py`),
+`tests/` (`conftest.py`, `test_client.py`), `examples/basic.py`,
+`pyproject.toml`, `LICENSE`, this README.

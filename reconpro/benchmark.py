@@ -1,5 +1,5 @@
 """
-ReconPro v11.1.0 — Scheduled Competitive Benchmarking
+ReconPro v11.2.0 — Scheduled Competitive Benchmarking
 
 Tracks security scores over time, computes trends, compares targets,
 generates leaderboards, and fires alerts when scores drop.
@@ -284,7 +284,7 @@ class BenchmarkRunner:
         for scheme in ("https", "http"):
             url = f"{scheme}://{host}"
             try:
-                req = urllib.request.Request(url, headers={"User-Agent": "ReconPro/11.1.0"})
+                req = urllib.request.Request(url, headers={"User-Agent": "ReconPro/11.2.0"})
                 resp = urllib.request.urlopen(req, timeout=5)
                 headers = dict(resp.headers)
                 server = headers.get("Server", "")
@@ -463,7 +463,7 @@ class BenchmarkRunner:
                 lines.append(f"- **Worst**: {w['target']} ({w['current_score']})")
             lines.append("")
 
-        lines.append("---\n*ReconPro v11.1.0 Benchmark Engine*")
+        lines.append("---\n*ReconPro v11.2.0 Benchmark Engine*")
         return "\n".join(lines)
 
     @staticmethod

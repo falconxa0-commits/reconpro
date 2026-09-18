@@ -207,7 +207,8 @@ class TestGetVersionInfo(unittest.TestCase):
         from reconpro.diagnostics import get_version_info
         result = get_version_info()
         self.assertIn("reconpro", result)
-        self.assertEqual(result["reconpro"], "11.1.0")
+        from reconpro import __version__ as _v
+        self.assertEqual(result["reconpro"], _v)
 
     def test_has_python_version(self):
         from reconpro.diagnostics import get_version_info
@@ -288,7 +289,8 @@ class TestGenerateDebugReport(unittest.TestCase):
     def test_contains_reconpro_version(self):
         from reconpro.diagnostics import generate_debug_report
         report = generate_debug_report()
-        self.assertIn("11.1.0", report)
+        from reconpro import __version__ as _v2
+        self.assertIn(_v2, report)
 
 
 class TestModuleStatus(unittest.TestCase):

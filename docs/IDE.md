@@ -106,5 +106,5 @@ python3 ide/tools/validate_all.py    # vscode 61, jetbrains 39, neovim 47,
 ```
 
 See [SDKS.md](SDKS.md) for language SDKs and
-[CLI_REFERENCE.md](CLI_REFERENCE.md) for the commands these
+[CLI_REFERENCE.md](reference/CLI_REFERENCE.md) for the commands these
 integrations invoke.

@@ -1,19 +1,25 @@
-// Thin, zero-dependency wrapper around the reconpro CLI (`python -m reconpro.cli`).
-// Every call shells out with an ARGUMENT LIST (never a shell string).
+// Thin, zero-dependency plain-JavaScript wrapper around the reconpro CLI
+// (`python -m reconpro.cli`). Every call shells out with an ARGUMENT LIST
+// (never a shell string).
+//
+// MAINTENANCE TIER (0.2.0): superseded by the typed TypeScript SDK in
+// `sdks/typescript` (same JSON contract, full type surface, compiled dist).
+// This package now receives critical fixes only — see sdks/POLICY.md §2.
 //
 // Config (constructor options or env):
-//   RECONPRO_PYTHON   python executable (default /home/z/.venv/bin/python3)
+//   RECONPRO_PYTHON   python executable (default "python3")
 //   RECONPRO_ROOT     dir containing the reconpro package, used as spawn cwd
+//                     (default ".")
 //   RECONPRO_TIMEOUT_MS  per-call timeout (default 120000)
 //
-// Verified CLI quirks (reconpro 11.1.0): `--version` and `doctor --json` write to
+// Verified CLI quirks (reconpro 11.x): `--version` and `doctor --json` write to
 // STDOUT; `history` has NO --json flag (exit 2) and its human table goes to STDERR,
 // so history() returns raw text.
 
 import { spawn } from 'node:child_process';
 
-export const DEFAULT_PYTHON = '/home/z/.venv/bin/python3';
-export const DEFAULT_ROOT = '/home/z/my-project/download/reconpro-github';
+export const DEFAULT_PYTHON = 'python3';
+export const DEFAULT_ROOT = '.';
 export const DEFAULT_TIMEOUT_MS = 120_000;
 export const EXPORT_FORMATS = ['sarif', 'md', 'json', 'html'];
 const INVALID_TARGET_CHARS = /[`;$&|<>(){}[\]!*'"\\\n\r\t ]/;
@@ -112,7 +118,7 @@ export class ReconProClient {
     }
   }
 
-  /** CLI version string, e.g. "ReconPro 11.1.0". */
+  /** CLI version string, e.g. "ReconPro 11.2.0". */
   async version() {
     const { stdout } = await this._run(['--version']);
     return stdout.trim();

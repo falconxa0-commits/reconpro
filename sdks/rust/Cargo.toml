@@ -1,14 +1,31 @@
 [package]
 name = "reconpro-sdk"
-version = "0.1.0"
+version = "1.0.0-rc.1"
 edition = "2021"
-description = "Thin std-only Rust SDK around the ReconPro CLI (no dependencies)"
+description = "Typed Rust SDK around the ReconPro security CLI (subprocess + JSON contract, serde-based)"
 license = "MIT"
+readme = "README.md"
+repository = "https://github.com/falconxa0-commits/reconpro"
+keywords = ["security", "recon", "scanner", "cli", "sdk"]
+categories = ["development-tools"]
 
 [lib]
 name = "reconpro_sdk"
 path = "src/lib.rs"
 
+# Dependency-light by policy (sdks/POLICY.md): serde + serde_json only.
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
 [[example]]
 name = "basic"
 path = "examples/basic.rs"
+
+[[example]]
+name = "export"
+path = "examples/export.rs"
+
+[[example]]
+name = "error-handling"
+path = "examples/error_handling.rs"

@@ -1,6 +1,6 @@
 # Plugins — the ReconPro Plugin SDK
 
-ReconPro v11.1.0 ships a sandboxed plugin SDK: plugins are **separate OS
+ReconPro v11.2.0 ships a sandboxed plugin SDK: plugins are **separate OS
 processes** behind an audit hook, not in-process code. This document
 covers the sandbox guarantees, the permission model, the manifest
 format, signing, the install/verify/upgrade lifecycle, and a complete

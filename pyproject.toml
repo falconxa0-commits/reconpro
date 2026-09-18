@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "reconpro"
 version = "11.2.0"
-description = "ReconPro v11 — Enterprise Security Reconnaissance Platform. 28 Modules. 77 Commands. MITRE ATT&CK. SARIF/PDF/CSV. Pure Python."
+description = "ReconPro v11 — Enterprise Security Reconnaissance Platform. 28 Modules. 81 Commands. MITRE ATT&CK. JSON/SARIF/Markdown/HTML Reports. Pure Python."
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"

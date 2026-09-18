@@ -1,7 +1,7 @@
 {
   "name": "reconpro-sdk",
-  "version": "0.1.0",
-  "description": "Zero-dependency Node SDK for the ReconPro security-scanning CLI",
+  "version": "0.2.0",
+  "description": "MAINTENANCE TIER: plain-JS Node wrapper for the ReconPro CLI — superseded by the typed SDK in sdks/typescript",
   "type": "module",
   "main": "src/index.js",
   "exports": { ".": "./src/index.js" },

@@ -1,0 +1,21 @@
+{
+  // Editor / `tsc --noEmit` configuration. Only `src/` is type-checked:
+  // `tests/client.test.ts` imports `bun:test` (types ship with bun, not
+  // with this zero-dependency package) and is executed — and therefore
+  // checked — by `bun test` itself. dist/index.d.ts is maintained by hand.
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022"],
+    "strict": true,
+    "noUncheckedIndexedAccess": false,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "verbatimModuleSyntax": false,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "allowImportingTsExtensions": false
+  },
+  "include": ["src/**/*.ts"]
+}

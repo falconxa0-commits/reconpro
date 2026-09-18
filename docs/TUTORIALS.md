@@ -1,8 +1,8 @@
-# ReconPro Tutorials
+# ReconPro Tutorials — the beginner track
 
-Hands-on tutorials, ordered from zero to CI integration. Every command shown
-here was executed on a clean install (`pip install reconpro`) while writing
-this page — outputs are real, not illustrative.
+Hands-on tutorials, ordered from zero to CI integration. Every command
+shown here was executed on a clean install (`pip install reconpro`,
+v11.2.0) while writing this page — outputs are real, not illustrative.
 
 > Time budget: T1 ≈ 5 min · T2 ≈ 10 min · T3 ≈ 10 min · T4 ≈ 15 min
 
@@ -13,7 +13,7 @@ this page — outputs are real, not illustrative.
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install reconpro
-reconpro --version        # ReconPro 11.1.0
+reconpro --version        # ReconPro 11.2.0
 ```
 
 Optional extras, only if you need them: `pip install "reconpro[full]"`.
@@ -24,11 +24,12 @@ Optional extras, only if you need them: `pip install "reconpro[full]"`.
 reconpro doctor
 ```
 
-`doctor` audits the local machine: firewall, SSH hardening, disk encryption,
-mandatory access control, kernel CVEs, world-writable paths. It prints a
-findings table, per-finding fix commands, and exits 0 when it ran cleanly.
-`reconpro doctor --json` gives the same data machine-readably; 
-`reconpro doctor --repair` applies the safe automatic fixes.
+`doctor` audits the local machine: firewall, SSH hardening, disk
+encryption, mandatory access control, kernel CVEs, world-writable
+paths. It prints a findings table, per-finding fix commands, and exits 0
+when it ran cleanly. `reconpro doctor --json` gives the same data
+machine-readably; `reconpro doctor --repair` applies the safe automatic
+fixes.
 
 ### 3. Meet the catalog
 
@@ -43,12 +44,39 @@ reconpro tutorial         # …then start it for real
 Only scan targets you own or are authorized to test:
 
 ```bash
-reconpro scan example.com --modules recon --json --timeout 60
+reconpro scan example.com --modules recon --json --timeout 60    # (network)
 ```
 
 `--json` puts machine-readable results on stdout (human output goes to
 stderr, so pipes stay clean). Add modules with `--modules recon,auth,chain`
 or see `reconpro scan --help` for the full option set.
+
+**What you get, and what you don't**: every remote scan first validates
+the target (DNS → TCP → HTTP/TLS). Try it against a domain that cannot
+resolve:
+
+```bash
+reconpro scan nonexistent-target-xyz.invalid --json -t 2
+```
+
+Real output (v11.2.0):
+
+```jsonc
+{
+  "total_findings": 1,
+  "severity_counts": {"info": 1},
+  "total_score": 0,
+  "grade": "U",                    // unreachable — no claim is made
+  "modules_run": [],
+  "target_validation": {"state": "UNREACHABLE_TARGET", "dns_resolved": false},
+  "scan_metadata": {"duration_s": 0.01, "result": "unreachable_target_short_circuit"}
+}
+```
+
+That single finding is the honest explanation ("Target unreachable —
+scan not performed"), not a fake audit. A scanner that reports HIGH
+findings about a host it never reached is lying to you; ReconPro is
+built not to.
 
 ## T2 — Audit your machine and keep a report
 
@@ -58,6 +86,15 @@ reconpro audit            # full local audit (seeds the "last scan")
 reconpro export audit-report.md     # Markdown, grade badge included
 reconpro export audit-report.sarif  # SARIF 2.1.0 for tooling
 reconpro history          # every scan stored on this machine
+```
+
+Real `reconpro history` table (this machine, truncated):
+
+```
+┃ Date             ┃ Target                    ┃ Score   ┃ Grade  ┃ Findings  ┃
+│ 2026-09-18T00:37 │ demo-app                  │ 85      │ A      │ 1         │
+│ 2026-09-18T00:37 │ nonexistent-target-xyz.in │ 0       │ U      │ 1         │
+│ 2026-09-18T00:36 │ localhost                 │ 0       │ F      │ 19        │
 ```
 
 The runnable version of this tutorial is
@@ -84,7 +121,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: falconxa0-commits/reconpro/actions/reconpro-scan@v11.1.0
+      - uses: falconxa0-commits/reconpro/actions/reconpro-scan@v11.2.0
         with:
           target: .
           format: sarif      # sarif | json | md | html
@@ -97,12 +134,14 @@ Inputs: `target` (file or dir, default `.`), `workspace`, `format`
 `secrets-json-path`.
 
 Pin an exact version by setting the job env `RECONPRO_INSTALL_SPEC` —
-e.g. `reconpro==11.1.0` — otherwise the action installs the CLI from PyPI
+e.g. `reconpro==11.2.0` — otherwise the action installs the CLI from PyPI
 (or from the repo itself when it *is* reconpro).
 
 This is the same pipeline the project runs on itself — see
 [`.github/workflows/reconpro-scan.yml`](../.github/workflows/reconpro-scan.yml)
-(the demo workflow) for a live, green example.
+(the demo workflow) for a live, green example. The full pipeline
+exit-code contract (what a `1` vs `2` vs `130` means for your pipeline)
+is documented in [guides/ENTERPRISE.md](guides/ENTERPRISE.md#the-exit-code-contract-for-pipelines).
 
 ## T4 — Your first sandboxed plugin
 
@@ -147,8 +186,9 @@ python sdks/python/examples/basic.py --target 127.0.0.1
 
 ## Where to go next
 
-- [docs/CLI_REFERENCE.md](CLI_REFERENCE.md) — every subcommand, captured from real `--help`
-- [docs/SECURITY.md](SECURITY.md) — the security contract (TLS by default, sandbox, prompt defense)
-- [docs/RELEASE.md](RELEASE.md) — reproducible releases, SBOM, signatures
-- [docs/ROADMAP.md](ROADMAP.md) — where the project is going
+- [reference/CLI_REFERENCE.md](reference/CLI_REFERENCE.md) — every subcommand, captured from real `--help`
+- [guides/SCANNING.md](guides/SCANNING.md) — how to drive the scanner well
+- [SECURITY.md](SECURITY.md) — the security contract (TLS by default, sandbox, prompt defense)
+- [RELEASE.md](RELEASE.md) — reproducible releases, SBOM, signatures
+- [ROADMAP.md](ROADMAP.md) — where the project is going
 - [CONTRIBUTING.md](../CONTRIBUTING.md) — become a contributor

@@ -7,27 +7,29 @@ architecture that makes them possible.
 ## Current numbers (this machine, Python 3.12)
 
 Measured with `tools/bench_startup.py` (cold `import reconpro.cli` +
-`--version`, 7 timed runs after one discarded warmup):
+`--version`, one untimed warmup then timed runs). Two fresh sessions on
+the shared documentation sandbox while this page was verified (v11.2.0):
 
 ```
-$ python tools/bench_startup.py
-[bench] warmup (untimed, discarded): 47.92 ms
-[bench] run 1/7:    46.88 ms
-[bench] run 2/7:    45.72 ms
-[bench] run 3/7:    46.55 ms
-[bench] run 4/7:    45.94 ms
-[bench] run 5/7:    45.97 ms
-[bench] run 6/7:    46.46 ms
-[bench] run 7/7:    46.01 ms
-[bench] {"min_ms": 45.72, "median_ms": 46.01, "avg_ms": 46.22, "p95_ms": 46.88, "max_ms": 46.88}
+$ python tools/bench_startup.py --runs 10          # session 1
+[bench] stats_ms: {"min_ms": 47.63, "median_ms": 47.83,
+                   "avg_ms": 48.1, "p95_ms": 49.21, "max_ms": 49.21}
+
+$ python tools/bench_startup.py                    # session 2 (default 7 runs)
+[bench] warmup (untimed, discarded): 54.31 ms
+[bench] run 1/7:    52.79 ms        (… runs 2-7: 52.47-53.10 ms)
+[bench] {"min_ms": 52.47, "median_ms": 52.55, "avg_ms": 52.68,
+         "p95_ms": 53.1, "max_ms": 53.1}
 [bench] threshold (median) = 100.0 ms -> PASS
 ```
 
-**Median ≈ 46 ms** (range 45.7–46.9 ms under no load). Before the
-lazy-import work, cold start measured **~570 ms** (the release
-engineer's baseline runs measured medians of 564–594 ms with p95 up to
-~1 s under load) — a ~12× improvement. The remaining cost is dominated
-by Python interpreter startup itself.
+**Median 47.8–52.6 ms** depending on machine load (both sessions well
+under the 100 ms CI budget); the developer workstation where the
+lazy-import work landed measured **≈ 46 ms**. Before the lazy-import
+work, cold start measured **~570 ms** (the release engineer's baseline
+runs measured medians of 564–594 ms with p95 up to ~1 s under load) — a
+~12× improvement. The remaining cost is dominated by Python interpreter
+startup itself.
 
 ## The benchmark tool
 
@@ -96,7 +98,7 @@ budget. `cli.py` therefore imports rich *names* from
 - `console` is a `_ConsoleProxy` — a `__getattr__`-resolving stand-in
   that instantiates the real `rich.console.Console(file=sys.stderr)` on
   first use (human output goes to stderr — see
-  [CLI_REFERENCE.md](CLI_REFERENCE.md));
+  [CLI_REFERENCE.md](reference/CLI_REFERENCE.md));
 - `Panel`, `Table`, `Progress`, `SpinnerColumn`, `TextColumn`, … are
   `_LazyClass` constructor shims: constructing one resolves the real
   class via `importlib`, caches it in `lazy_rich.globals()`, and returns

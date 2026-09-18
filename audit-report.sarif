@@ -1,0 +1,768 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "ReconPro",
+          "version": "11.2.0",
+          "informationUri": "https://github.com/falconxa0-commits/reconpro",
+          "rules": [
+            {
+              "id": "RP-OS_INFO",
+              "name": "Os Info",
+              "shortDescription": {
+                "text": "OS: Linux x86_64 | Kernel: 5.10.134-013.15.kangaroo.al8.x86_64"
+              },
+              "fullDescription": {
+                "text": "Running Linux on x86_64 with kernel 5.10.134-013.15.kangaroo.al8.x86_64"
+              },
+              "helpUri": "https://github.com/falconxa0-commits/reconpro/wiki/os_info",
+              "properties": {
+                "security-severity": "0.0"
+              }
+            },
+            {
+              "id": "RP-PORTS",
+              "name": "Ports",
+              "shortDescription": {
+                "text": "Risky open port: 3000 (Node.js dev server)"
+              },
+              "fullDescription": {
+                "text": "Port 3000 (Node.js dev server) is open and listening. This could expose services to network attackers."
+              },
+              "helpUri": "https://github.com/falconxa0-commits/reconpro/wiki/ports",
+              "properties": {
+                "security-severity": "2.5"
+              }
+            },
+            {
+              "id": "RP-FIREWALL",
+              "name": "Firewall",
+              "shortDescription": {
+                "text": "No firewall detected"
+              },
+              "fullDescription": {
+                "text": "No firewall detected. Your machine has no network firewall."
+              },
+              "helpUri": "https://github.com/falconxa0-commits/reconpro/wiki/firewall",
+              "properties": {
+                "security-severity": "7.5"
+              }
+            },
+            {
+              "id": "RP-ENV_SECRETS",
+              "name": "Env Secrets",
+              "shortDescription": {
+                "text": "Database URL in environment: DATABASE_URL"
+              },
+              "fullDescription": {
+                "text": "Environment variable DATABASE_URL may contain a secret. Val: file:/..."
+              },
+              "helpUri": "https://github.com/falconxa0-commits/reconpro/wiki/env_secrets",
+              "properties": {
+                "security-severity": "7.5"
+              }
+            },
+            {
+              "id": "RP-FILE_PERMISSIONS",
+              "name": "File Permissions",
+              "shortDescription": {
+                "text": "World-readable: User account file (/etc/passwd)"
+              },
+              "fullDescription": {
+                "text": "User account file at /etc/passwd has permissions 0o644 and is world-readable."
+              },
+              "helpUri": "https://github.com/falconxa0-commits/reconpro/wiki/file_permissions",
+              "properties": {
+                "security-severity": "5.0"
+              }
+            },
+            {
+              "id": "RP-MAC",
+              "name": "Mac",
+              "shortDescription": {
+                "text": "No Mandatory Access Control (SELinux/AppArmor) detected"
+              },
+              "fullDescription": {
+                "text": "No SELinux or AppArmor MAC system detected. Consider enabling one for additional security."
+              },
+              "helpUri": "https://github.com/falconxa0-commits/reconpro/wiki/mac",
+              "properties": {
+                "security-severity": "5.0"
+              }
+            },
+            {
+              "id": "RP-KERNEL_CVE",
+              "name": "Kernel Cve",
+              "shortDescription": {
+                "text": "Kernel potentially vulnerable to Netfilter UAF (CVE-2021-4039)"
+              },
+              "fullDescription": {
+                "text": "Kernel version 5.10.134-013.15.kangaroo.al8.x86_64 falls within the affected range (5.4.0-5.15.1). Use-after-free in netfilter allows priv esc."
+              },
+              "helpUri": "https://github.com/falconxa0-commits/reconpro/wiki/kernel_cve",
+              "properties": {
+                "security-severity": "7.5"
+              }
+            },
+            {
+              "id": "RP-WORLD_WRITABLE",
+              "name": "World Writable",
+              "shortDescription": {
+                "text": "/tmp is world-writable with sticky bit (0o1777)"
+              },
+              "fullDescription": {
+                "text": "/tmp has sticky bit set, which prevents users from deleting files they don't own. This is the standard secure configuration."
+              },
+              "helpUri": "https://github.com/falconxa0-commits/reconpro/wiki/world_writable",
+              "properties": {
+                "security-severity": "0.0"
+              }
+            },
+            {
+              "id": "RP-AUTH_POLICY",
+              "name": "Auth Policy",
+              "shortDescription": {
+                "text": "Password max age is 99999 days (too long)"
+              },
+              "fullDescription": {
+                "text": "Password expiration is set to 99999 days. NIST recommends 90 days or less."
+              },
+              "helpUri": "https://github.com/falconxa0-commits/reconpro/wiki/auth_policy",
+              "properties": {
+                "security-severity": "5.0"
+              }
+            },
+            {
+              "id": "RP-DISK_SECURITY",
+              "name": "Disk Security",
+              "shortDescription": {
+                "text": "No disk encryption detected"
+              },
+              "fullDescription": {
+                "text": "No LUKS or ecryptfs encryption found. Laptop data is at risk if stolen."
+              },
+              "helpUri": "https://github.com/falconxa0-commits/reconpro/wiki/disk_security",
+              "properties": {
+                "security-severity": "5.0"
+              }
+            },
+            {
+              "id": "RP-PHYSICAL_SECURITY",
+              "name": "Physical Security",
+              "shortDescription": {
+                "text": "No auto-lock mechanism detected"
+              },
+              "fullDescription": {
+                "text": "No screen locker daemon (xautolock/xscreensaver) is running."
+              },
+              "helpUri": "https://github.com/falconxa0-commits/reconpro/wiki/physical_security",
+              "properties": {
+                "security-severity": "2.5"
+              }
+            },
+            {
+              "id": "RP-MALWARE_PROTECTION",
+              "name": "Malware Protection",
+              "shortDescription": {
+                "text": "No antivirus or security tools detected"
+              },
+              "fullDescription": {
+                "text": "No ClamAV, rkhunter, chkrootkit, Lynis, or fail2ban found. Your system has no malware detection."
+              },
+              "helpUri": "https://github.com/falconxa0-commits/reconpro/wiki/malware_protection",
+              "properties": {
+                "security-severity": "5.0"
+              }
+            },
+            {
+              "id": "RP-AUDIT_LOGGING",
+              "name": "Audit Logging",
+              "shortDescription": {
+                "text": "No logging services detected (rsyslog/journald/auditd)"
+              },
+              "fullDescription": {
+                "text": "No standard logging services are running. Security events are not being recorded."
+              },
+              "helpUri": "https://github.com/falconxa0-commits/reconpro/wiki/audit_logging",
+              "properties": {
+                "security-severity": "7.5"
+              }
+            },
+            {
+              "id": "RP-UAC_SUDO",
+              "name": "Uac Sudo",
+              "shortDescription": {
+                "text": "sudo timestamp_timeout using default (15 min)"
+              },
+              "fullDescription": {
+                "text": "sudo uses the default 15-minute credential cache. Consider reducing it for better security."
+              },
+              "helpUri": "https://github.com/falconxa0-commits/reconpro/wiki/uac_sudo",
+              "properties": {
+                "security-severity": "2.5"
+              }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "RP-OS_INFO",
+          "level": "note",
+          "message": {
+            "text": "OS: Linux x86_64 | Kernel: 5.10.134-013.15.kangaroo.al8.x86_64",
+            "markdown": "**OS: Linux x86_64 | Kernel: 5.10.134-013.15.kangaroo.al8.x86_64**\n\nRunning Linux on x86_64 with kernel 5.10.134-013.15.kangaroo.al8.x86_64"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "c-6aac59b5-14810412-4c763053b6d3"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "category": "os_info",
+            "module": "host",
+            "points_deducted": 0,
+            "evidence": "5.10.134-013.15.kangaroo.al8.x86_64",
+            "remediation": "Update your system packages: sudo apt upgrade",
+            "confidence": 0.8,
+            "verification_state": "UNVERIFIED"
+          }
+        },
+        {
+          "ruleId": "RP-PORTS",
+          "level": "note",
+          "message": {
+            "text": "Risky open port: 3000 (Node.js dev server)",
+            "markdown": "**Risky open port: 3000 (Node.js dev server)**\n\nPort 3000 (Node.js dev server) is open and listening. This could expose services to network attackers."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "c-6aac59b5-14810412-4c763053b6d3"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "category": "ports",
+            "module": "host",
+            "points_deducted": 4,
+            "evidence": "Port 3000 found in ss/netstat output",
+            "remediation": "Close port 3000 if not needed, or bind to 127.0.0.1 only.",
+            "confidence": 0.8,
+            "verification_state": "UNVERIFIED"
+          }
+        },
+        {
+          "ruleId": "RP-PORTS",
+          "level": "note",
+          "message": {
+            "text": "Risky open port: 8443 (HTTPS alt)",
+            "markdown": "**Risky open port: 8443 (HTTPS alt)**\n\nPort 8443 (HTTPS alt) is open and listening. This could expose services to network attackers."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "c-6aac59b5-14810412-4c763053b6d3"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "category": "ports",
+            "module": "host",
+            "points_deducted": 4,
+            "evidence": "Port 8443 found in ss/netstat output",
+            "remediation": "Close port 8443 if not needed, or bind to 127.0.0.1 only.",
+            "confidence": 0.8,
+            "verification_state": "UNVERIFIED"
+          }
+        },
+        {
+          "ruleId": "RP-FIREWALL",
+          "level": "error",
+          "message": {
+            "text": "No firewall detected",
+            "markdown": "**No firewall detected**\n\nNo firewall detected. Your machine has no network firewall."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "c-6aac59b5-14810412-4c763053b6d3"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "category": "firewall",
+            "module": "host",
+            "points_deducted": 10,
+            "evidence": "No firewall found",
+            "remediation": "Install and enable a firewall: sudo apt install ufw && sudo ufw enable",
+            "confidence": 0.8,
+            "verification_state": "UNVERIFIED"
+          }
+        },
+        {
+          "ruleId": "RP-ENV_SECRETS",
+          "level": "error",
+          "message": {
+            "text": "Database URL in environment: DATABASE_URL",
+            "markdown": "**Database URL in environment: DATABASE_URL**\n\nEnvironment variable DATABASE_URL may contain a secret. Val: file:/..."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "c-6aac59b5-14810412-4c763053b6d3"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "category": "env_secrets",
+            "module": "host",
+            "points_deducted": 8,
+            "evidence": "DATABASE_URL=file:/...",
+            "remediation": "Move DATABASE_URL to a secrets manager (AWS Secrets Manager, Vault, .env file with restricted permissions).",
+            "confidence": 0.8,
+            "verification_state": "UNVERIFIED"
+          }
+        },
+        {
+          "ruleId": "RP-FILE_PERMISSIONS",
+          "level": "warning",
+          "message": {
+            "text": "World-readable: User account file (/etc/passwd)",
+            "markdown": "**World-readable: User account file (/etc/passwd)**\n\nUser account file at /etc/passwd has permissions 0o644 and is world-readable."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "c-6aac59b5-14810412-4c763053b6d3"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "category": "file_permissions",
+            "module": "host",
+            "points_deducted": 5,
+            "evidence": "Permissions: 0o644",
+            "remediation": "Restrict permissions: chmod 0o644 /etc/passwd",
+            "confidence": 0.8,
+            "verification_state": "UNVERIFIED"
+          }
+        },
+        {
+          "ruleId": "RP-MAC",
+          "level": "warning",
+          "message": {
+            "text": "No Mandatory Access Control (SELinux/AppArmor) detected",
+            "markdown": "**No Mandatory Access Control (SELinux/AppArmor) detected**\n\nNo SELinux or AppArmor MAC system detected. Consider enabling one for additional security."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "c-6aac59b5-14810412-4c763053b6d3"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "category": "mac",
+            "module": "host",
+            "points_deducted": 5,
+            "evidence": "Neither getenforce nor aa-status succeeded",
+            "remediation": "Install AppArmor: sudo apt install apparmor apparmor-profiles",
+            "confidence": 0.8,
+            "verification_state": "UNVERIFIED"
+          }
+        },
+        {
+          "ruleId": "RP-KERNEL_CVE",
+          "level": "error",
+          "message": {
+            "text": "Kernel potentially vulnerable to Netfilter UAF (CVE-2021-4039)",
+            "markdown": "**Kernel potentially vulnerable to Netfilter UAF (CVE-2021-4039)**\n\nKernel version 5.10.134-013.15.kangaroo.al8.x86_64 falls within the affected range (5.4.0-5.15.1). Use-after-free in netfilter allows priv esc."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "c-6aac59b5-14810412-4c763053b6d3"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "category": "kernel_cve",
+            "module": "host",
+            "points_deducted": 8,
+            "evidence": "Kernel: 5.10.134-013.15.kangaroo.al8.x86_64, CVE range: 5.4.0-5.15.1",
+            "remediation": "Update kernel: sudo apt dist-upgrade",
+            "confidence": 0.8,
+            "verification_state": "UNVERIFIED"
+          }
+        },
+        {
+          "ruleId": "RP-KERNEL_CVE",
+          "level": "error",
+          "message": {
+            "text": "Kernel potentially vulnerable to Dirty Pipe (CVE-2022-0847)",
+            "markdown": "**Kernel potentially vulnerable to Dirty Pipe (CVE-2022-0847)**\n\nKernel version 5.10.134-013.15.kangaroo.al8.x86_64 falls within the affected range (5.8.0-5.16.11). Buffer overflow in pipe buffer allows overwriting read-only files."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "c-6aac59b5-14810412-4c763053b6d3"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "category": "kernel_cve",
+            "module": "host",
+            "points_deducted": 15,
+            "evidence": "Kernel: 5.10.134-013.15.kangaroo.al8.x86_64, CVE range: 5.8.0-5.16.11",
+            "remediation": "Update kernel: sudo apt dist-upgrade",
+            "confidence": 0.8,
+            "verification_state": "UNVERIFIED"
+          }
+        },
+        {
+          "ruleId": "RP-KERNEL_CVE",
+          "level": "error",
+          "message": {
+            "text": "Kernel potentially vulnerable to netfilter nf_tables UAF (CVE-2024-1086)",
+            "markdown": "**Kernel potentially vulnerable to netfilter nf_tables UAF (CVE-2024-1086)**\n\nKernel version 5.10.134-013.15.kangaroo.al8.x86_64 falls within the affected range (5.1.0-6.7.0). Use-after-free in nf_tables allows local priv esc."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "c-6aac59b5-14810412-4c763053b6d3"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "category": "kernel_cve",
+            "module": "host",
+            "points_deducted": 15,
+            "evidence": "Kernel: 5.10.134-013.15.kangaroo.al8.x86_64, CVE range: 5.1.0-6.7.0",
+            "remediation": "Update kernel: sudo apt dist-upgrade",
+            "confidence": 0.8,
+            "verification_state": "UNVERIFIED"
+          }
+        },
+        {
+          "ruleId": "RP-WORLD_WRITABLE",
+          "level": "note",
+          "message": {
+            "text": "/tmp is world-writable with sticky bit (0o1777)",
+            "markdown": "**/tmp is world-writable with sticky bit (0o1777)**\n\n/tmp has sticky bit set, which prevents users from deleting files they don't own. This is the standard secure configuration."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "c-6aac59b5-14810412-4c763053b6d3"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "category": "world_writable",
+            "module": "host",
+            "points_deducted": 0,
+            "evidence": "Permissions: 0o1777",
+            "remediation": "",
+            "confidence": 0.8,
+            "verification_state": "UNVERIFIED"
+          }
+        },
+        {
+          "ruleId": "RP-WORLD_WRITABLE",
+          "level": "note",
+          "message": {
+            "text": "/var/tmp is world-writable with sticky bit (0o1777)",
+            "markdown": "**/var/tmp is world-writable with sticky bit (0o1777)**\n\n/var/tmp has sticky bit set, which prevents users from deleting files they don't own. This is the standard secure configuration."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "c-6aac59b5-14810412-4c763053b6d3"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "category": "world_writable",
+            "module": "host",
+            "points_deducted": 0,
+            "evidence": "Permissions: 0o1777",
+            "remediation": "",
+            "confidence": 0.8,
+            "verification_state": "UNVERIFIED"
+          }
+        },
+        {
+          "ruleId": "RP-WORLD_WRITABLE",
+          "level": "note",
+          "message": {
+            "text": "/dev/shm is world-writable with sticky bit (0o1777)",
+            "markdown": "**/dev/shm is world-writable with sticky bit (0o1777)**\n\n/dev/shm has sticky bit set, which prevents users from deleting files they don't own. This is the standard secure configuration."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "c-6aac59b5-14810412-4c763053b6d3"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "category": "world_writable",
+            "module": "host",
+            "points_deducted": 0,
+            "evidence": "Permissions: 0o1777",
+            "remediation": "",
+            "confidence": 0.8,
+            "verification_state": "UNVERIFIED"
+          }
+        },
+        {
+          "ruleId": "RP-AUTH_POLICY",
+          "level": "warning",
+          "message": {
+            "text": "Password max age is 99999 days (too long)",
+            "markdown": "**Password max age is 99999 days (too long)**\n\nPassword expiration is set to 99999 days. NIST recommends 90 days or less."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "c-6aac59b5-14810412-4c763053b6d3"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "category": "auth_policy",
+            "module": "doctor",
+            "points_deducted": 4,
+            "evidence": "PASS_MAX_DAYS=99999",
+            "remediation": "Set PASS_MAX_DAYS=90 in /etc/login.defs",
+            "confidence": 0.8,
+            "verification_state": "UNVERIFIED"
+          }
+        },
+        {
+          "ruleId": "RP-AUTH_POLICY",
+          "level": "warning",
+          "message": {
+            "text": "No password complexity requirements configured",
+            "markdown": "**No password complexity requirements configured**\n\nNo minimum password length or complexity requirements found."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "c-6aac59b5-14810412-4c763053b6d3"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "category": "auth_policy",
+            "module": "doctor",
+            "points_deducted": 5,
+            "evidence": "pwquality.conf not configured",
+            "remediation": "Configure /etc/security/pwquality.conf: minlen=12 dcredit=-1 ucredit=-1 ocredit=-1 lcredit=-1",
+            "confidence": 0.8,
+            "verification_state": "UNVERIFIED"
+          }
+        },
+        {
+          "ruleId": "RP-DISK_SECURITY",
+          "level": "warning",
+          "message": {
+            "text": "No disk encryption detected",
+            "markdown": "**No disk encryption detected**\n\nNo LUKS or ecryptfs encryption found. Laptop data is at risk if stolen."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "c-6aac59b5-14810412-4c763053b6d3"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "category": "disk_security",
+            "module": "doctor",
+            "points_deducted": 5,
+            "evidence": "No encrypted volumes found",
+            "remediation": "Enable full disk encryption: cryptsetup luksFormat /dev/sdX",
+            "confidence": 0.8,
+            "verification_state": "UNVERIFIED"
+          }
+        },
+        {
+          "ruleId": "RP-PHYSICAL_SECURITY",
+          "level": "note",
+          "message": {
+            "text": "No auto-lock mechanism detected",
+            "markdown": "**No auto-lock mechanism detected**\n\nNo screen locker daemon (xautolock/xscreensaver) is running."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "c-6aac59b5-14810412-4c763053b6d3"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "category": "physical_security",
+            "module": "doctor",
+            "points_deducted": 3,
+            "evidence": "No lock process found",
+            "remediation": "Install xautolock: sudo apt install xautolock && xautolock -time 5 -locker lock",
+            "confidence": 0.8,
+            "verification_state": "UNVERIFIED"
+          }
+        },
+        {
+          "ruleId": "RP-MALWARE_PROTECTION",
+          "level": "warning",
+          "message": {
+            "text": "No antivirus or security tools detected",
+            "markdown": "**No antivirus or security tools detected**\n\nNo ClamAV, rkhunter, chkrootkit, Lynis, or fail2ban found. Your system has no malware detection."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "c-6aac59b5-14810412-4c763053b6d3"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "category": "malware_protection",
+            "module": "doctor",
+            "points_deducted": 5,
+            "evidence": "No AV tools found",
+            "remediation": "Install security tools: sudo apt install clamav rkhunter lynis fail2ban",
+            "confidence": 0.8,
+            "verification_state": "UNVERIFIED"
+          }
+        },
+        {
+          "ruleId": "RP-AUDIT_LOGGING",
+          "level": "error",
+          "message": {
+            "text": "No logging services detected (rsyslog/journald/auditd)",
+            "markdown": "**No logging services detected (rsyslog/journald/auditd)**\n\nNo standard logging services are running. Security events are not being recorded."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "c-6aac59b5-14810412-4c763053b6d3"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "category": "audit_logging",
+            "module": "doctor",
+            "points_deducted": 10,
+            "evidence": "No active logging services found",
+            "remediation": "Install and enable logging: sudo apt install rsyslog auditd && sudo systemctl enable --now rsyslog auditd",
+            "confidence": 0.8,
+            "verification_state": "UNVERIFIED"
+          }
+        },
+        {
+          "ruleId": "RP-UAC_SUDO",
+          "level": "note",
+          "message": {
+            "text": "sudo timestamp_timeout using default (15 min)",
+            "markdown": "**sudo timestamp_timeout using default (15 min)**\n\nsudo uses the default 15-minute credential cache. Consider reducing it for better security."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "c-6aac59b5-14810412-4c763053b6d3"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "category": "uac_sudo",
+            "module": "doctor",
+            "points_deducted": 2,
+            "evidence": "timestamp_timeout not explicitly set (default=15)",
+            "remediation": "Add to /etc/sudoers: Defaults timestamp_timeout=5",
+            "confidence": 0.8,
+            "verification_state": "UNVERIFIED"
+          }
+        }
+      ],
+      "invocations": [
+        {
+          "executionSuccessful": true,
+          "startTimeUtc": "2026-09-18T02:35:36.574359+00:00"
+        }
+      ],
+      "properties": {
+        "target": "localhost",
+        "grade": "F",
+        "total_score": 0,
+        "scan_metadata": {
+          "scanner": "reconpro",
+          "started_at": "2026-09-18T02:35:36.574359+00:00",
+          "duration_s": 1.06,
+          "result": "modules_executed"
+        },
+        "intelligence": {
+          "executive_risk_score": 52.0,
+          "exposure_score": 20.7,
+          "attack_paths_count": 0,
+          "cve_matches": [
+            "CVE-2021-4039",
+            "CVE-2022-0847",
+            "CVE-2024-1086"
+          ],
+          "cwe_matches": [
+            "CWE-1357",
+            "CWE-259",
+            "CWE-522",
+            "CWE-798"
+          ]
+        }
+      }
+    }
+  ]
+}

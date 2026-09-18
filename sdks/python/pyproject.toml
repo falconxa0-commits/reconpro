@@ -4,10 +4,31 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "reconpro-sdk"
-version = "0.1.0"
-description = "Thin Python SDK around the ReconPro CLI (stdlib only, no dependencies)"
+version = "1.0.0"
+description = "Typed, stdlib-only Python SDK around the ReconPro security CLI (subprocess + JSON contract)"
+readme = "README.md"
 requires-python = ">=3.9"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "ReconPro Security" }]
+keywords = ["security", "recon", "scanner", "cli", "sdk"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Security",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
 dependencies = []
+
+[project.urls]
+Repository = "https://github.com/falconxa0-commits/reconpro"
 
 [tool.setuptools]
 packages = ["reconpro_sdk"]

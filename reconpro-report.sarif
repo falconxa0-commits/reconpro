@@ -1,0 +1,189 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "ReconPro",
+          "version": "11.2.0",
+          "informationUri": "https://github.com/falconxa0-commits/reconpro",
+          "rules": [
+            {
+              "id": "RP-GIT",
+              "name": "Git",
+              "shortDescription": {
+                "text": "Git repo: reconpro-live (12 recent commits)"
+              },
+              "fullDescription": {
+                "text": "Found git repository at /home/z/my-project/download/reconpro-live."
+              },
+              "helpUri": "https://github.com/falconxa0-commits/reconpro/wiki/git",
+              "properties": {
+                "security-severity": "0.0"
+              }
+            },
+            {
+              "id": "RP-HARDCODED_SECRETS",
+              "name": "Hardcoded Secrets",
+              "shortDescription": {
+                "text": "Hardcoded password in validate.js"
+              },
+              "fullDescription": {
+                "text": "Secret detected in source code: Hardcoded password"
+              },
+              "helpUri": "https://github.com/falconxa0-commits/reconpro/wiki/hardcoded_secrets",
+              "properties": {
+                "security-severity": "9.0"
+              }
+            },
+            {
+              "id": "RP-GIT_CREDENTIAL_LEAK",
+              "name": "Git Credential Leak",
+              "shortDescription": {
+                "text": "Credential in .git/config remote URL: reconpro-live"
+              },
+              "fullDescription": {
+                "text": "HTTPS URL with embedded credentials found in .git/config. Credentials should not be embedded in remote URLs."
+              },
+              "helpUri": "https://github.com/falconxa0-commits/reconpro/wiki/git_credential_leak",
+              "properties": {
+                "security-severity": "9.0"
+              }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "RP-GIT",
+          "level": "note",
+          "message": {
+            "text": "Git repo: reconpro-live (12 recent commits)",
+            "markdown": "**Git repo: reconpro-live (12 recent commits)**\n\nFound git repository at /home/z/my-project/download/reconpro-live."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "/home/z/my-project/download/reconpro-live"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "category": "git",
+            "module": "dev",
+            "points_deducted": 0,
+            "evidence": "/home/z/my-project/download/reconpro-live",
+            "remediation": "",
+            "confidence": 0.8,
+            "verification_state": "UNVERIFIED"
+          }
+        },
+        {
+          "ruleId": "RP-GIT",
+          "level": "note",
+          "message": {
+            "text": "No pre-commit hooks in reconpro-live",
+            "markdown": "**No pre-commit hooks in reconpro-live**\n\nNo pre-commit hooks found. Consider adding pre-commit for secret scanning and linting."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "/home/z/my-project/download/reconpro-live"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "category": "git",
+            "module": "dev",
+            "points_deducted": 2,
+            "evidence": "No .git/hooks/pre-commit in /home/z/my-project/download/reconpro-live",
+            "remediation": "Install pre-commit: pip install pre-commit && pre-commit install",
+            "confidence": 0.8,
+            "verification_state": "UNVERIFIED"
+          }
+        },
+        {
+          "ruleId": "RP-HARDCODED_SECRETS",
+          "level": "error",
+          "message": {
+            "text": "Hardcoded password in validate.js",
+            "markdown": "**Hardcoded password in validate.js**\n\nSecret detected in source code: Hardcoded password"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "/home/z/my-project/download/reconpro-live"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "category": "hardcoded_secrets",
+            "module": "dev",
+            "points_deducted": 15,
+            "evidence": "Match: SKYNET-A...A-77",
+            "remediation": "Move secrets to environment variables or a secrets manager. Never commit secrets to source code.",
+            "confidence": 0.8,
+            "verification_state": "UNVERIFIED"
+          }
+        },
+        {
+          "ruleId": "RP-GIT_CREDENTIAL_LEAK",
+          "level": "error",
+          "message": {
+            "text": "Credential in .git/config remote URL: reconpro-live",
+            "markdown": "**Credential in .git/config remote URL: reconpro-live**\n\nHTTPS URL with embedded credentials found in .git/config. Credentials should not be embedded in remote URLs."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "/home/z/my-project/download/reconpro-live"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "category": "git_credential_leak",
+            "module": "dev",
+            "points_deducted": 15,
+            "evidence": "Remote URL: https:***@github.com/falconxa0-commits/reconpro.git",
+            "remediation": "Remove credentials from the URL. Use SSH keys or a credential helper: git remote set-url origin <clean-url>",
+            "confidence": 0.8,
+            "verification_state": "UNVERIFIED"
+          }
+        }
+      ],
+      "invocations": [
+        {
+          "executionSuccessful": true,
+          "startTimeUtc": "2026-09-18T02:35:37.688926+00:00"
+        }
+      ],
+      "properties": {
+        "target": "local-audit",
+        "grade": "B",
+        "total_score": 68,
+        "scan_metadata": {
+          "scanner": "reconpro",
+          "started_at": "2026-09-18T02:35:37.688926+00:00",
+          "duration_s": 0.14,
+          "result": "modules_executed"
+        },
+        "intelligence": {
+          "executive_risk_score": 12.0,
+          "exposure_score": 10.0,
+          "attack_paths_count": 0,
+          "cve_matches": [],
+          "cwe_matches": []
+        }
+      }
+    }
+  ]
+}

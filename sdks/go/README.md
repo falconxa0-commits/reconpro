@@ -1,36 +1,59 @@
-# reconpro-sdk (Go)
+# reconpro-sdk (Go) — Beta
 
-Thin Go SDK around the ReconPro CLI (`python -m reconpro.cli`). Every call uses
-`exec.CommandContext` with an **argument list** — never a shell string.
+Thin Go SDK around the ReconPro CLI (>= 11.2.0). Every call shells out via
+`exec.CommandContext` with an **argument list** (never a shell string) and
+parses the JSON contract from STDOUT; the CLI's pretty UI goes to STDERR.
 
-> **STATUS: COMPILE-BLOCKED — go toolchain absent in this environment.**
-> The `go` binary is not installed in the sandbox where this SDK was written, so
-> `client.go`, `client_test.go`, and `examples/basic/main.go` have NOT been
-> compiled or run. Review + run `bash smoke.sh` where Go exists before trusting it.
+Stability tier: **Beta (1.0.0-rc.1)** — versioning & compatibility policy:
+[`../POLICY.md`](../POLICY.md). This SDK has **no local Go toolchain** to
+compile it (honest environment limitation); the `SDKs` CI workflow
+(`.github/workflows/sdks.yml`) builds, vets, and tests it on every push.
 
-## API
+## API (all methods take a `context.Context` first)
+
 | Method | Returns | Notes |
 |---|---|---|
-| `Version()` | `(string, error)` | e.g. `"ReconPro 11.1.0"`; error includes exit status + stderr |
-| `Doctor()` | `(map[string]any, error)` | parsed JSON of `doctor --json` |
-| `History(target)` | `(string, error)` | raw text — CLI quirk: `history` has **no** `--json` flag; human table on STDERR |
-| `Scan(target)` | `(map[string]any, error)` | network; shell metacharacters rejected client-side |
-| `Export(path, format)` | `(string, error)` | CLI `export` subcommand, format from extension (sarif/md/json/html) |
+| `NewClient()` | `*Client` | binary via `RECONPRO_BINARY` env, default `"reconpro"` on PATH; 5 min default timeout |
+| `Version(ctx)` | `(string, error)` | verification ping (`reconpro --version`) |
+| `Scan(ctx, target)` | `(*ScanResult, error)` | remote scan; offline `*.invalid` demo returns grade `"U"` + `UNREACHABLE_TARGET` |
+| `Vibesec(ctx, target)` | `(*ScanResult, error)` | vibesec module scan |
+| `Audit(ctx)` | `(*ScanResult, error)` | local host/dev audit (offline) |
+| `Dev(ctx, path)` | `(*ScanResult, error)` | scan a local directory (offline) |
+| `Doctor(ctx)` | `(*ScanResult, error)` | local health check (offline) |
+| `Export(ctx, path, format)` | `(string, error)` | CLI `export`; format `sarif`/`md`/`json`/`html` (extension appended when missing) |
 
-## Config
-`Client{PythonPath, Root, Timeout}` fields; `NewClient()` reads `RECONPRO_PYTHON`
-(default `/home/z/.venv/bin/python3`) and `RECONPRO_ROOT` (default
-`/home/z/my-project/download/reconpro-github`). Default timeout 120s
-(`exec.CommandContext`, killed on deadline).
+`ScanResult` is fully typed for the CLI 11.2.0 contract: `Target`,
+`ModulesRun`, `TotalFindings`, `SeverityCounts`, `TotalScore`, `Grade`,
+`Findings[]` (each with the truth-layer `Confidence *float64` and
+`VerificationState *string`), `TargetValidation` (`State`/`DnsResolved`/
+`Reachable`/`HttpOK`/`TlsValid`/`Details`/`CheckedAt`, `nil` for local
+scans), `ScanMetadata` (`Scanner`/`StartedAt`/`DurationS`/`Result`), plus
+`Raw map[string]any` (the complete decoded document — unknown future keys
+stay accessible) and the `Unreachable()` helper. Unknown JSON keys are
+ignored by `encoding/json`, so newer CLIs remain compatible.
 
-## Run tests (where Go exists)
+## Errors (use `errors.As`)
+
+| Type | Meaning | Fields |
+|---|---|---|
+| `*CommandError` | CLI exited non-zero | `ExitCode` (0/1/2/130 contract), `Stderr`, `Command` |
+| `*TimeoutError` | per-call timeout exceeded | `Timeout`, `Command` |
+| `*JSONError` | exit 0 but stdout not JSON (implements `Unwrap`) | `Err`, `Details` (stdout head) |
+| wrapped `error` | spawn failure (binary not found) | message mentions the binary |
+
+## Run tests
+
+`go test ./...` is **hermetic** — every CLI-backed case runs against a tiny
+shell-script stub binary (canned JSON byte-faithful to CLI 11.2.0), so no
+reconpro installation is needed:
+
 ```
-cd sdks/go && bash smoke.sh     # go build ./... && go vet ./... && go test ./...
-# or directly:  go test ./...
+cd sdks/go && bash smoke.sh   # build + vet + hermetic tests + offline examples
 ```
-Tests: `TestVersion` (asserts "11.1.0"), `TestVersionBadPythonPath`,
-`TestScanRejectsShellMetacharacters` (client-side), `TestBuildArgsUsesArgumentList`,
-`TestExportValidatesFormat`. Set `RECONPRO_SKIP=1` to skip CLI-backed tests.
 
-## Files
-`client.go` (entry point), `client_test.go`, `examples/basic/main.go`, `go.mod`, `smoke.sh`.
+## Examples
+
+- `examples/basic` — version ping + typed scan result (offline by default,
+  `--target example.com` for a live scan)
+- `examples/export` — scan then export SARIF + Markdown
+- `examples/error-handling` — every error type, `errors.As` branching

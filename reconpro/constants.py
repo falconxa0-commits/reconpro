@@ -85,7 +85,7 @@ DEFAULT_MAX_WORKERS: int = 4
 
 # User-Agent string
 USER_AGENT: str = (
-    "ReconPro/11.1.0 (Enterprise Security Scanner; "
+    f"ReconPro/{__version__} (Enterprise Security Scanner; "
     "+https://github.com/falconxa0-commits/reconpro)"
 )
 

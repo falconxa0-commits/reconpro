@@ -1,4 +1,4 @@
-"""ReconPro v11.1.0 — Regression Intelligence System.
+"""ReconPro v11.2.0 — Regression Intelligence System.
 
 Provides intelligent regression detection and management for the ReconPro
 platform.  This is the *intelligence layer* that sits above the specific

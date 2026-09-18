@@ -14,7 +14,7 @@ python -m venv .venv && source .venv/bin/activate
 pip install -e ".[test]"       # package + pytest/pytest-cov
 pip install ruff               # same linter CI uses
 
-reconpro --version             # smoke: ReconPro 11.1.0
+reconpro --version             # smoke: ReconPro 11.2.0
 ```
 
 Python 3.10+ for development; CI tests 3.11 / 3.12 / 3.13.
@@ -23,7 +23,7 @@ Python 3.10+ for development; CI tests 3.11 / 3.12 / 3.13.
 
 ```
 reconpro/            the package — 28 modules, CLI, engine, plugin SDK
-reconpro/tests/      3200+ tests across 53 files
+reconpro/tests/      3301 tests across 53 files
 docs/                user + operator documentation
 examples/            runnable CLI and Python examples
 tools/               release_manager, bench_startup, security_scan, chunked-test runner
@@ -85,7 +85,7 @@ authoritative check for those two.
 2. **Tests move with code.** New behavior needs a test in the right chunk;
    moved tests need `ci_test_groups.txt` updated.
 3. **Docs are deliverables.** If you add a command or change output, update
-   `docs/CLI_REFERENCE.md` (it is generated from real `--help` output) and
+   `docs/reference/CLI_REFERENCE.md` (it is generated from real `--help` output) and
    the relevant guide.
 4. **No new security-baseline findings.** Run gate 4 above; if your change
    legitimately resolves an old finding, shrink the baseline — never grow
@@ -106,9 +106,10 @@ python tools/release_manager.py verify       # must exit 0
 git tag vX.Y.Z && git push --tags           # release.yml builds + signs + publishes
 ```
 
-The wheel is byte-reproducible; the sdist is not (tar/gzip nondeterminism
-under the setuptools backend — documented in the release manifest). The
-Ed25519 signature over `SHA256SUMS` is authoritative.
+The wheel and the sdist are both byte-reproducible since v11.2.0
+(the release gate double-builds and compares bytes; the pre-v11.2.0
+sdist gap is documented in docs/RELEASES.md). The Ed25519 signature
+over `SHA256SUMS` is authoritative.
 
 ## Security issues
 

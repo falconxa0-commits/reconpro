@@ -1,7 +1,11 @@
 """ReconPro Enterprise v11 — The Security Reconnaissance Platform.
 
-Twenty-Seven Blades. One Target. One Verdict.
+Twenty-Eight Blades. One Target. One Verdict.
 Pure Python. Enterprise-grade.
+
+28 modules total — 25 remote/advanced + 3 local — counted by
+`reconpro list --all` (see reconpro/registry.py, the single source of
+truth for the module catalog).
 
 Remote Modules:
     recon      13-category surface reconnaissance
@@ -15,6 +19,8 @@ Remote Modules:
     pegasus    Pegasus spyware/surveillance detection
     cloud_recon Cloud infrastructure reconnaissance
     team       Team collaboration & shared scans
+    container_sec Container/K8s security analysis
+    iac_audit   Infrastructure-as-Code audit (Terraform/CF/Docker)
 
 Advanced Modules:
     quantum_fingerprint  OS/kernel fingerprinting via HTTP timing

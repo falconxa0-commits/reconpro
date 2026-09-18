@@ -4,6 +4,10 @@
 # Honesty contract: if the Go toolchain is absent this script MUST exit
 # non-zero with an explicit "ENVIRONMENT BLOCKED" message. It never
 # reports success when nothing was compiled or tested.
+#
+# `go test ./...` is hermetic (stub-binary tests). The examples run against
+# the REAL CLI — needs reconpro (>= 11.2.0) on PATH or via RECONPRO_BINARY;
+# all example scans use offline *.invalid targets.
 set -uo pipefail
 cd "$(dirname "$0")"
 
@@ -14,9 +18,17 @@ if ! command -v go >/dev/null 2>&1; then
   exit 3
 fi
 
+BIN="${RECONPRO_BINARY:-reconpro}"
+if ! command -v "$BIN" >/dev/null 2>&1 && [ ! -x "$BIN" ]; then
+  echo "GO SDK SMOKE: ENVIRONMENT BLOCKED — reconpro CLI not found (PATH or RECONPRO_BINARY)."
+  exit 3
+fi
+
 set -e
 go build ./...
 go vet ./...
 go test ./...
-go run ./examples/basic --offline
+go run ./examples/basic
+go run ./examples/export
+go run ./examples/error-handling
 echo "GO SDK SMOKE OK"

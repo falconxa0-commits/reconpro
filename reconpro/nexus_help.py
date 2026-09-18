@@ -157,7 +157,7 @@ class HelpOverlay(ModalScreen):
             with Vertical(classes="help-frame"):
                 # Title
                 yield Static(
-                    f"[{cyan} bold]RECONPRO NEXUS v11.1.0[/{cyan}]  [{dim}]COMMAND REFERENCE[/{dim}]",
+                    f"[{cyan} bold]RECONPRO NEXUS v11.2.0[/{cyan}]  [{dim}]COMMAND REFERENCE[/{dim}]",
                     classes="help-title",
                 )
 

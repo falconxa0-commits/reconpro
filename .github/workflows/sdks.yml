@@ -1,8 +1,9 @@
-# ReconPro SDKs — compile + test the Go and Rust SDKs on real toolchains.
-# The SDKs were authored in an environment without go/cargo toolchains
-# (smoke.sh exits 3 "ENVIRONMENT BLOCKED" there); this workflow provides
-# the verification those scripts were designed for: build, vet, unit
-# tests, and the offline example run against the pip-installed CLI.
+# ReconPro SDKs — compile + test the Go, Rust, and TypeScript SDKs on real toolchains.
+# The Go/Rust SDKs were authored in an environment without go/cargo toolchains
+# (smoke.sh exits 3 "ENVIRONMENT BLOCKED" there); this workflow provides the
+# verification those scripts were designed for: build, vet, unit tests, and the
+# offline example runs against the pip-installed CLI. The TypeScript job
+# re-runs its hermetic bun test suite + the plain-Node dist smoke on CI runners.
 name: SDKs
 
 on:
@@ -16,7 +17,7 @@ permissions:
 
 jobs:
   go:
-    name: Go SDK (build + vet + test + example)
+    name: Go SDK (build + vet + test + examples)
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -38,16 +39,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install .
 
-      - name: Go SDK smoke (build, vet, test, offline example)
-        env:
-          RECONPRO_PYTHON: python3
-          RECONPRO_ROOT: ${{ github.workspace }}
+      - name: Go SDK smoke (build, vet, hermetic tests, offline examples)
         run: |
           chmod +x sdks/go/smoke.sh
           bash sdks/go/smoke.sh
 
   rust:
-    name: Rust SDK (build + test + example)
+    name: Rust SDK (build + test + examples)
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -71,10 +69,45 @@ jobs:
           python -m pip install --upgrade pip
           pip install .
 
-      - name: Rust SDK smoke (build, test serialized, offline example)
-        env:
-          RECONPRO_PYTHON: python3
-          RECONPRO_ROOT: ${{ github.workspace }}
+      - name: Rust SDK smoke (build, hermetic tests, offline examples)
         run: |
           chmod +x sdks/rust/smoke.sh
           bash sdks/rust/smoke.sh
+
+  typescript:
+    name: TypeScript SDK (bun test + plain-Node dist smoke + examples)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Set up Python + install reconpro CLI
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install reconpro CLI
+        run: |
+          python -m pip install --upgrade pip
+          pip install .
+
+      - name: TypeScript SDK tests (hermetic, stub-backed)
+        run: |
+          cd sdks/typescript
+          bun test
+
+      - name: Dist smoke (compiled dist under plain Node >= 18)
+        run: |
+          cd sdks/typescript
+          node --version
+          node tests/dist-smoke.mjs
+
+      - name: Examples (basic vs real CLI offline *.invalid; error-handling vs stub)
+        run: |
+          cd sdks/typescript
+          bun run examples/basic.ts
+          bun run examples/error-handling.ts

@@ -140,7 +140,7 @@ class AIEndpointDiscovery:
     """
 
     TIMEOUT = 8  # seconds
-    USER_AGENT = "ReconPro/11.1.0-AI-RedTeam"
+    USER_AGENT = "ReconPro/11.2.0-AI-RedTeam"
 
     def __init__(self, extra_patterns: Optional[List[str]] = None) -> None:
         self._patterns = list(AI_ENDPOINT_PATTERNS)
@@ -382,7 +382,7 @@ class AIVendorFingerprinter:
     """
 
     TIMEOUT = 10
-    USER_AGENT = "ReconPro/11.1.0-AI-RedTeam"
+    USER_AGENT = "ReconPro/11.2.0-AI-RedTeam"
     PROBE_PATHS = ["/v1/models", "/", "/health", "/api/docs", "/v1/chat/completions"]
 
     def fingerprint(self, base_url: str) -> List[Dict[str, Any]]:
@@ -900,7 +900,7 @@ def run_ai_red_team(target: str, base_url: str, timeout: int = 8,
     secrets = []
     try:
         import urllib.request as _urllib_request
-        req = _urllib_request.Request(base_url, headers={"User-Agent": "ReconPro/11.1.0-AI-RedTeam"})
+        req = _urllib_request.Request(base_url, headers={"User-Agent": "ReconPro/11.2.0-AI-RedTeam"})
         ctx = None
         if not verify_tls:
             from .http_layer import _unverified_context

@@ -5,29 +5,30 @@ Where the project is going. Statuses are honest: **proposed** = not started,
 Dates are targets, not promises — this is a direction document, and items
 move only when their verification story moves with them.
 
-Current release: **v11.1.0** (live on
+Current release: **v11.2.0** (live on
 [PyPI](https://pypi.org/project/reconpro/) and
 [GitHub Releases](https://github.com/falconxa0-commits/reconpro/releases)).
 
-## v11.2.0 — depth and polish (next minor)
+## v11.2.0 — depth and polish
 
 | # | Feature | Why | Status |
 |---|---|---|---|
-| 1 | **Sdist byte-reproducibility** | the wheel is byte-identical across builds; the sdist is not (tar/gzip nondeterminism under setuptools). Fix via `tarfile` + `SOURCE_DATE_EPOCH` normalization so both artifacts verify bit-for-bit | proposed |
-| 2 | **GPG public key distribution** | v11.1.0 ships `SHA256SUMS.asc` but the GPG public key was never published, so third parties can only verify via Ed25519 (which *is* in-repo). Publish the GPG pubkey in `tools/keys/` + README, and add it to the `verify` flow | proposed |
+| 1 | **Sdist byte-reproducibility** | the wheel is byte-identical across builds; the sdist was not (tar/gzip nondeterminism under setuptools). Fixed via archive normalization (sorted entries, fixed mtime = `SOURCE_DATE_EPOCH`, uid/gid 0, gzip mtime 0) so both artifacts verify bit-for-bit — double-build proven | **shipped** |
+| 2 | **GPG public key distribution** | v11.1.0 shipped `SHA256SUMS.asc` but the GPG public key was never published, so third parties could only verify via Ed25519 (which *is* in-repo). The new key (`5F3D 637E …9F89`) is published in `docs/keys/` + keyservers, and the v11.1.0 gap is recorded in RELEASES.md | **shipped** |
 | 3 | **`ruff` rule-set expansion** | CI lints `E9,F63` (fatal errors) today because of 7 pre-existing `F821` hits in dead code. Delete the dead code, move CI to a strict selection (`E,F,W,I` minimum) via `[tool.ruff]` in `pyproject.toml` | proposed |
 | 4 | **Full-suite pytest in one invocation** | the suite currently runs in chunks because a single full `pytest` hangs (known issue). Root-cause the hang (suspected: shared event loops / textual fixtures), retire `tools/ci_test_groups.txt` | proposed |
 | 5 | **Windows + macOS first-class CI matrix** | CI is ubuntu-only today. Add `windows-latest`/`macos-latest` to `ci.yml`, fix what falls over, document platform caveats honestly | proposed |
 | 6 | **Report themes** | `reconpro report` already emits MD/JSON/HTML/SARIF; add selectable HTML themes + a dark mode for the HTML report | proposed |
 | 7 | **`reconpro compliance` framework packs** | map findings to CIS Benchmarks and DISA STIG IDs alongside the existing MITRE ATT&CK mapping | proposed |
 | 8 | **JetBrains plugin: real IDE host verification** | the plugin skeleton is structurally validated only (no IDE host ran it). Stand up gradle-intellij verify task or a marketplace CI channel | proposed |
-| 9 | **Performance: cold start < 30 ms** | ~46 ms median today (from ~570 ms). Finish lazy-import coverage for `graph`/`intel` clusters | proposed |
-| 10 | **SDK parity: `audit` + `export` methods** | SDKs wrap `scan` JSON today; expose typed `audit()`, `export(format)` and streaming progress callbacks across python/node/go/rust/java | proposed |
+| 9 | **Performance: cold start < 30 ms** | ~46–53 ms median today (from ~570 ms). Finish lazy-import coverage for `graph`/`intel` clusters | proposed |
+| 10 | **SDK parity: `audit` + `export` methods** | SDKs wrap `scan` JSON today; expose typed `audit()`, `export(format)` and streaming progress callbacks across python/node/go/rust/java | **shipped** in the v11.2.0 SDK rewrite (typed truth-layer fields + `audit`/`dev`/`doctor`/`export` across Python/TypeScript/Go/Rust; Java remains experimental) |
 
 ## v11.3.x — enterprise features
 
 The enterprise track. Everything below assumes the v11.2 foundation
-(reproducibility, stricter lint, platform matrix).
+(reproducibility — now including the sdist — stricter lint, platform
+matrix).
 
 - **RBAC policy packs** — role files (`scanner`, `auditor`, `admin`) that
   gate which commands/modules a user may invoke; enforced in the CLI before
@@ -113,7 +114,7 @@ fully functional standalone — the dashboard is an optional lens.
 
 ## Verification culture (unchanged)
 
-Every roadmap item ships with the same bar as v11.1.0: reproducible
+Every roadmap item ships with the same bar as v11.2.0: reproducible
 artifacts, signed checksums, SBOM, a `verify` command that actually detects
 tampering, and CI that fails loudly. A feature that cannot carry its
 verification story does not ship.

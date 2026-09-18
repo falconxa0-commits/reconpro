@@ -1,6 +1,6 @@
 # Security Posture
 
-How ReconPro v11.1.0 defends *itself* — the CLI you are running on your
+How ReconPro v11.2.0 defends *itself* — the CLI you are running on your
 machine and in your CI. This page documents the posture, points at the
 enforcing code, and tells you how to report issues. The regression suite
 locks every claim below in with AST and behavioural tests
@@ -148,18 +148,14 @@ details, live attack/defence transcripts and the permission model:
 
 ## Reporting issues
 
-This repository is an internal exercise artifact; there is no public
-tracker. If you are working within this program:
-
-1. Do not open public issues for security findings.
-2. Record the finding in the worklog with a "SECURITY" prefix, or hand
-  it to the current security-sweep owner (task 7-a in the PHOENIX
-  program).
-3. For upstream-style disclosure if this code is ever published: create
-  a private advisory (GitHub "Security advisories" → "Report a
-  vulnerability") rather than a public issue; include reproduction
-  steps and the enforcing-test reference if you believe a claim on this
-  page is false.
+Follow the reporting policy in the repository's root
+[SECURITY.md](../SECURITY.md): use GitHub's private advisory flow
+(*Security* tab → *Report a vulnerability*), never a public issue.
+Acknowledgement target is 72 hours; the full response timeline is in
+that document. "A claim on this page is false" is explicitly listed
+there as a security issue — the enforcement is supposed to be real.
+The threat-model reasoning behind this page:
+[security/THREAT_MODEL.md](security/THREAT_MODEL.md).
 
 ## Honest limits
 

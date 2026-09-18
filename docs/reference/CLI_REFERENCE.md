@@ -1,4 +1,4 @@
-# CLI Reference — reconpro 11.1.0
+# CLI Reference — reconpro 11.2.0
 
 Every subcommand of `reconpro` with its real usage line, options and
 examples. All usage lines and options tables below are captured from the
@@ -19,22 +19,45 @@ usage: reconpro [-h] [--version] {scan,vibesec,audit,dev,ports,secrets,list,nexu
 | `-h, --help` | show this help message and exit |
 | `--version, -v` | show program's version number and exit |
 
-Shorthand: `reconpro example.com` (a bare first argument that is not a
-known subcommand) is interpreted as `reconpro scan example.com` — i.e.
-it starts a **network scan**.
+Shorthand: `reconpro example.com` — a bare first argument that **looks
+like a scan target** (a URL, an IPv4 address, a dotted domain name, or
+`localhost`) is interpreted as `reconpro scan <target>` and starts a
+**network scan**. Anything else is a hard error:
+
+```
+$ reconpro totally-unknown-cmd-xyz
+error: unknown command 'totally-unknown-cmd-xyz'
+
+Usage: reconpro <command> [args]
+
+* Run 'reconpro --help' for the full command list.
+* If you meant to scan a target, be explicit:
+      reconpro scan totally-unknown-cmd-xyz
+                                                          # exit 2
+$ reconpro scna example.com
+error: unknown command 'scna'
+Did you mean: scan?
+                                                          # exit 2
+```
+
+Unknown commands exit **2** with a did-you-mean suggestion (difflib
+closest match) — a typo can never silently become a 30-second scan of
+garbage (regression-tested in `reconpro/tests/test_truth_layer.py`).
 
 ## Exit codes
 
 | Exit code | Meaning | Verified example |
 |---|---|---|
-| `0` | success | `reconpro --version`, `reconpro tutorial --list`, `reconpro suggest --json`, `reconpro plugin list`, `reconpro doctor --json` |
-| `1` | runtime error (unknown subcommand after the banner, plugin action failure, `plugin verify` FAIL, `tutorial --step` out of range) | `reconpro nosuchcmd` → prints banner then error, exit 1; `reconpro plugin verify <bad>` → exit 1 |
-| `2` | usage error — argparse strict mode: unknown/missing arguments always exit 2 | `reconpro --bogus-flag` → exit 2; `reconpro plugin` (no action) → exit 2; `reconpro history --json` → exit 2 (there is no `--json` flag on `history`) |
+| `0` | success | `reconpro --version`, `reconpro tutorial --list`, `reconpro suggest --json`, `reconpro plugin list`, `reconpro doctor --json`, `reconpro scan nonexistent-target-xyz.invalid --json -t 2` (an unreachable target is an honest *result*, not an error) |
+| `1` | runtime error (plugin action failure, `plugin verify` FAIL, `tutorial --step` out of range) | `reconpro plugin verify <tampered>` → exit 1; `reconpro tutorial --step 99` → exit 1 |
+| `2` | usage error — argparse strict mode: unknown/missing arguments, **unknown commands** (with did-you-mean suggestions), and out-of-bounds `--timeout`/`--rate-limit` | `reconpro --bogus-flag` → exit 2; `reconpro plugin` (no action) → exit 2; `reconpro history --json` → exit 2 (there is no `--json` flag on `history`); `reconpro scna example.com` → exit 2 + "Did you mean: scan?"; `reconpro scan example.com --timeout 0` → exit 2 (valid range 1–600); `reconpro scan example.com --rate-limit 2000` → exit 2 (valid range 0.1–1000) |
+| `130` | interrupted — SIGINT (Ctrl+C); the CLI exits promptly via a signal handler + watchdog, no traceback spam | `reconpro scan example.com` + Ctrl+C → exit 130 within <5 s (verified; regression-tested) |
 
 The CLI is **strict**: unrecognized arguments are never silently ignored
 (`cli.py` calls `parser.parse_args()` with no `parse_known_args`
 fallback), so typos fail loudly with exit 2. This makes the CLI safe to
-script in CI.
+script in CI. See [guides/ENTERPRISE.md](../guides/ENTERPRISE.md) for
+the full pipeline exit-code contract.
 
 ## JSON output convention
 
@@ -166,7 +189,7 @@ reconpro suggest --json
 
 ### `reconpro plugin`
 
-Plugin management (sandboxed SDK). See [PLUGINS.md](PLUGINS.md) for the full lifecycle.
+Plugin management (sandboxed SDK). See [PLUGINS.md](../PLUGINS.md) for the full lifecycle.
 
 ```
 reconpro plugin [-h] [--allow-unsigned] [--json] {list,create,create-sdk,run,install,verify,upgrade,remove,sign,keys} [name] [target]
@@ -242,9 +265,9 @@ reconpro scan [-h] [--modules MODULES] [--all] [--json] [-o OUTPUT_FILE] [--time
 | `--modules MODULES, -m MODULES` | Comma-separated module list (argparse shows no description) |
 | `--all, -a` | Run all modules |
 | `--json` | Output JSON (stdout); human output goes to stderr |
-| `--timeout TIMEOUT, -t TIMEOUT` | Scan timeout in seconds |
-| `--insecure, -k` | Skip TLS verification (TLS is verified by default; this is the single audited opt-out) |
-| `--rate-limit RATE_LIMIT` | Requests per second limit |
+| `--timeout TIMEOUT, -t TIMEOUT` | Scan timeout in seconds — **1–600**, out-of-range exits 2 |
+| `--insecure, -k` | Skip TLS verification (TLS is verified by default; this is the single audited opt-out — the target then usually validates as VERIFIED_TARGET with `tls_valid: false`; without it a self-signed target is PARTIAL_TARGET and findings are capped at MEDIUM) |
+| `--rate-limit RATE_LIMIT` | Requests per second — **0.1–1000**, out-of-range exits 2 |
 | `--engineering` | Run engineering pipeline after scan |
 | `--intelligence` | Enable intelligence pipeline (default: on) |
 | `--no-intelligence` | Disable intelligence pipeline |
@@ -256,7 +279,15 @@ reconpro scan [-h] [--modules MODULES] [--all] [--json] [-o OUTPUT_FILE] [--time
 ```bash
 reconpro scan example.com  # (network)
 reconpro scan example.com --modules recon,auth --json -o out.json --timeout 60  # (network)
+reconpro scan nonexistent-target-xyz.invalid --json -t 2  # (network) → honest UNREACHABLE_TARGET, grade U
 ```
+
+Every remote scan runs the **target validation pipeline** (DNS → TCP →
+HTTP/TLS) first. An unreachable target short-circuits: no modules run,
+score 0, grade `U`, one explanation finding; a partially-validated target
+caps findings at MEDIUM. The JSON gains `target_validation` and
+`scan_metadata` blocks — schema: [API.md](API.md),
+semantics: [guides/SCANNING.md](../guides/SCANNING.md).
 
 ### `reconpro vibesec`
 
@@ -277,9 +308,9 @@ reconpro vibesec [-h] [--json] [-o OUTPUT_FILE] [--timeout TIMEOUT] [--insecure]
 | Option | Description |
 |---|---|
 | `--json` | Output JSON (stdout); human output goes to stderr |
-| `--timeout TIMEOUT, -t TIMEOUT` | Scan timeout in seconds |
-| `--insecure, -k` | Skip TLS verification (TLS is verified by default; this is the single audited opt-out) |
-| `--rate-limit RATE_LIMIT` | Requests per second limit |
+| `--timeout TIMEOUT, -t TIMEOUT` | Scan timeout in seconds — **1–600**, out-of-range exits 2 |
+| `--insecure, -k` | Skip TLS verification (TLS is verified by default; this is the single audited opt-out — the target then usually validates as VERIFIED_TARGET with `tls_valid: false`; without it a self-signed target is PARTIAL_TARGET and findings are capped at MEDIUM) |
+| `--rate-limit RATE_LIMIT` | Requests per second — **0.1–1000**, out-of-range exits 2 |
 
 **Examples:**
 
