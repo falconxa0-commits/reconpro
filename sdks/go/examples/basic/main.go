@@ -69,7 +69,7 @@ func main() {
                 fmt.Println("target state    :", tv.State,
                         "(dns:", boolStr(tv.DnsResolved),
                         "reachable:", boolStr(tv.Reachable),
-                        "http_ok:", boolStr(tv.HttpOk), ")")
+                        "http_ok:", boolStr(tv.HttpOK), ")")
         }
         if meta := result.ScanMetadata; meta != nil {
                 fmt.Println("scan            :", meta.Result, "in", meta.DurationS, "s")

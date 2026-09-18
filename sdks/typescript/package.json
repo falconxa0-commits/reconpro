@@ -12,13 +12,18 @@
       "default": "./dist/index.js"
     }
   },
-  "files": ["dist", "src", "README.md", "LICENSE"],
+  "files": [
+    "dist",
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
   "engines": {
     "node": ">=18"
   },
   "scripts": {
     "build": "bun build src/index.ts --outdir dist --target node",
-    "test": "bun test",
+    "test": "bun test --timeout=30000",
     "test:dist": "node tests/dist-smoke.mjs",
     "example:basic": "bun run examples/basic.ts",
     "example:errors": "bun run examples/error-handling.ts"

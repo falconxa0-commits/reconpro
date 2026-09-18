@@ -10,7 +10,7 @@
  * Run:  bun test          (or: bun test tests/client.test.ts)
  */
 
-import { describe, expect, test } from "bun:test";
+import { beforeAll, describe, expect, test } from "bun:test";
 import { chmod, mkdtemp, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
@@ -94,6 +94,13 @@ describe("client construction", () => {
 // ─────────────────────────── truth-layer contract ─────────────────────────
 
 describe("scan — truth-layer contract (hermetic, stub-backed)", () => {
+  // Cold CI runners can take seconds for the FIRST interpreter spawn of
+  // the stub (all later spawns are ~ms). Warm it up outside a timed test.
+  beforeAll(async () => {
+    await stubClient({ timeoutMs: 20_000 }).version();
+  });
+
+
   test("unreachable *.invalid target returns the honest no-result", async () => {
     const result = await stubClient().scan("nonexistent-target-blah.invalid");
 
