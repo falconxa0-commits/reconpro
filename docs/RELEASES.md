@@ -9,11 +9,12 @@ GitHub release.
 
 | Key | Fingerprint / value | In effect |
 |---|---|---|
-| Ed25519 (authoritative) | see [`tools/keys/release_key.pub`](../tools/keys/release_key.pub) | v11.2.0+ |
+| Ed25519 (authoritative) | `tools/keys/release_key.pub` — hex pubkey starting `5a6bc09f…` (rotated at v11.2.0; the v11.1.0-era key starting `68227195…` lives at the `v11.1.0` tag) | v11.2.0+ |
 | GPG `ReconPro Release <release@reconpro.local>` | `5F3D 637E FDE1 E8F5 6568  BEE0 2331 2E75 1E3F 9F89` | v11.2.0+ |
 | GPG (v11.1.0, never published — known gap) | `CAB5F283…` (full fingerprint lost with the original build env) | v11.1.0 only |
 
 Key rotation process: [keys/README.md](keys/README.md#key-rotation-process).
+Both v11.2.0 keys are built and applied in CI via repository secrets.
 
 ## Releases
 

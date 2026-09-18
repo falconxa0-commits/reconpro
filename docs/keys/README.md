@@ -13,10 +13,18 @@ schemes** over the same `SHA256SUMS` manifest:
 
 | Field | Value |
 |---|---|
+| Ed25519 (authoritative) | hex pubkey in [`tools/keys/release_key.pub`](../../tools/keys/release_key.pub) — **rotated at v11.2.0** (starts `5a6bc09f…`); the v11.1.0-era key (starts `68227195…`) is preserved at the `v11.1.0` tag for verifying that release |
 | GPG fingerprint | `5F3D 637E FDE1 E8F5 6568  BEE0 2331 2E75 1E3F 9F89` |
 | UID | `ReconPro Release <release@reconpro.local>` |
 | Algorithm | ed25519 (sign + cert) |
 | Public key block | [`reconpro-release-5F3D637E.asc`](reconpro-release-5F3D637E.asc) |
+
+Both keys were rotated at v11.2.0 following the rotation process below
+(publish-before-first-use): the release machine that held the v11.1.0-era
+private keys was decommissioned, so v11.2.0+ is signed by the new keys,
+whose public halves are committed at the `v11.2.0` tag. Releases are built
+and signed in CI (`.github/workflows/release.yml`) using these keys via
+repository secrets — the private keys never live in the repository.
 
 The v11.1.0 release (2026-09-17) was signed with a key whose fingerprint
 was `CAB5F283…` — that key existed only in the original build
