@@ -60,7 +60,7 @@ llm = ["openai>=1.0.0", "anthropic>=0.18.0"]
 graph = ["networkx>=3.0"]
 raw = ["scapy>=2.5.0"]
 intel = ["shodan>=1.25.0"]
-collab = ["websockets>=12.0"]
+collab = ["websockets>=16.1.1"]
 integrations = ["jira>=3.0", "slack-sdk>=3.0"]
 full = [
     "aiohttp>=3.9.0",
@@ -70,7 +70,7 @@ full = [
     "networkx>=3.0",
     "scapy>=2.5.0",
     "shodan>=1.25.0",
-    "websockets>=12.0",
+    "websockets>=16.1.1",
 ]
 
 [project.scripts]
