@@ -322,6 +322,12 @@ def reproducibility_check(version: str, env: dict, first: dict) -> dict:
         out = tmp / "dist"
         out.mkdir()
         names, _strategy = build_once(env, src, out)
+        # normalize the rebuilt sdist the same way as the primary build,
+        # so the byte-comparison measures BUILD determinism, not packing
+        # differences introduced by the normalization step itself.
+        rebuilt_sdist = out / f"reconpro-{version}.tar.gz"
+        if rebuilt_sdist.exists() and env.get("SOURCE_DATE_EPOCH"):
+            normalize_sdist(rebuilt_sdist, int(env["SOURCE_DATE_EPOCH"]))
         digest_after = source_tree_digest()
         result: dict = {
             "source_date_epoch": env.get("SOURCE_DATE_EPOCH"),
@@ -405,6 +411,8 @@ def cmd_build(args) -> int:
     info["strategy"] = strategy
     sdist = DIST / f"reconpro-{version}.tar.gz"
     if sdist.exists():
+        if args.reproducible:
+            normalize_sdist(sdist, int(env["SOURCE_DATE_EPOCH"]))
         info["sdist"] = sdist.name
         info["sdist_sha256"] = sha256_file(sdist)
         info["sdist_size_bytes"] = sdist.stat().st_size
@@ -843,6 +851,28 @@ def cmd_verify(args) -> int:
         except Exception as exc:
             log("verify", f"FAIL: RELEASE_MANIFEST.json unreadable: {exc}")
             ok = False
+    # 7. provenance cross-check (if present)
+    prov = DIST / "PROVENANCE.json"
+    if prov.exists():
+        try:
+            p = json.loads(prov.read_text())
+            steps = {s["step"] for s in p.get("trust_chain", [])}
+            required_steps = {"developer", "source", "build", "artifact", "signature", "user"}
+            if not required_steps.issubset(steps):
+                log("verify", f"FAIL: PROVENANCE.json trust chain incomplete: missing {required_steps - steps}")
+                ok = False
+            else:
+                for art in p["trust_chain"][3]["evidence"]["artifacts"]:
+                    target = DIST / art["name"]
+                    if not target.exists() or sha256_file(target) != art["sha256"]:
+                        log("verify", f"FAIL: PROVENANCE.json artifact hash mismatch: {art['name']}")
+                        ok = False
+                log("verify", "PROVENANCE.json trust chain verified (6 transitions, artifact hashes match)")
+        except Exception as exc:
+            log("verify", f"FAIL: PROVENANCE.json unreadable: {exc}")
+            ok = False
+    else:
+        log("verify", "note: PROVENANCE.json not present — run `provenance` or `all`")
     log("verify", "RESULT: " + ("ALL CHECKS PASSED" if ok else "FAILED"))
     return 0 if ok else 1
 
@@ -852,8 +882,216 @@ def cmd_verify(args) -> int:
 # --------------------------------------------------------------------------- #
 
 
+def normalize_sdist(sdist: Path, epoch: int) -> None:
+    """Rewrite *sdist* as a deterministic tar.gz (in place).
+
+    The setuptools sdist backend embeds build-time mtimes and ordering
+    that ignore SOURCE_DATE_EPOCH, which made sdists non-reproducible.
+    This step repacks the archive with:
+      * entries sorted by name (stable order),
+      * every mtime set to SOURCE_DATE_EPOCH,
+      * uid/gid/uname/gname zeroed,
+      * gzip header mtime = 0 and a fixed OS byte.
+
+    After normalization the same source + same version always yields the
+    same sdist bytes — verified by the `--reproducible` double-build.
+    """
+    import gzip
+    import tarfile
+
+    with tarfile.open(sdist, "r:gz") as tf:
+        members = tf.getmembers()
+        members.sort(key=lambda m: m.name)
+        with tempfile.TemporaryDirectory(prefix="rp-sdist-norm-") as td:
+            tf.extractall(td)  # safe: our own freshly built archive
+            tmp_out = Path(td) / "out.tar"
+            with tarfile.open(tmp_out, "w", format=tarfile.GNU_FORMAT) as out:
+                for m in members:
+                    m2 = out.gettarinfo(name=str(Path(td) / m.name), arcname=m.name)
+                    m2.mtime = epoch
+                    m2.uid = 0
+                    m2.gid = 0
+                    m2.uname = ""
+                    m2.gname = ""
+                    if m.isfile():
+                        with open(Path(td) / m.name, "rb") as fh:
+                            out.addfile(m2, fh)
+                    else:
+                        out.addfile(m2)
+            data = tmp_out.read_bytes()
+    with open(sdist, "wb") as fh:
+        # gzip with mtime=0, no filename, fixed OS byte (255 = unknown)
+        with gzip.GzipFile(fileobj=fh, mode="wb", mtime=0) as gz:
+            gz.write(data)
+    log("sdist-normalize", f"rewrote {sdist.name} deterministically "
+        f"(sorted entries, mtime={epoch}, uid/gid=0, gzip mtime=0)")
+
+
+def cmd_provenance(args) -> int:
+    """Write dist/PROVENANCE.json — the full trust-transition record."""
+    version = read_version()
+    artifacts = release_artifacts()
+    if not artifacts:
+        log("provenance", "no artifacts in dist/ — run build first")
+        return 1
+    # git commit info
+    commit = None
+    code, out = run(["git", "rev-parse", "HEAD"], REPO, timeout=30)
+    if code == 0:
+        commit = out.strip()
+    code, out = run(["git", "log", "-1", "--format=%cI"], REPO, timeout=30)
+    commit_date = out.strip() if code == 0 else None
+    branch_code, branch_out = run(["git", "rev-parse", "--abbrev-ref", "HEAD"], REPO, timeout=30)
+    branch = branch_out.strip() if branch_code == 0 else "?"
+    # dirty tree?
+    code, out = run(["git", "status", "--porcelain"], REPO, timeout=60)
+    dirty = bool(out.strip()) if code == 0 else None
+
+    sums = DIST / SUMS_NAME
+    sig_files = {
+        "ed25519_hex": (DIST / ED25519_SIG_NAME).exists(),
+        "ed25519_binary": (DIST / BIN_SIG_NAME).exists(),
+        "gpg_asc": (DIST / GPG_SIG_NAME).exists(),
+    }
+    provenance = {
+        "schema": "reconpro-provenance/1.0",
+        "package": "reconpro",
+        "version": version,
+        "generated_at": utcnow_iso(),
+        "trust_chain": [
+            {
+                "step": "developer",
+                "description": "Source authored under the ReconPro program; commits are the unit of trust.",
+                "evidence": {"commit": commit, "commit_date": commit_date,
+                             "branch": branch, "tree_dirty_at_build": dirty},
+            },
+            {
+                "step": "source",
+                "description": "Exact source-input digest (all reconpro/**/*.py + packaging metadata).",
+                "evidence": {"source_tree_sha256": source_tree_digest()},
+            },
+            {
+                "step": "build",
+                "description": "Built by tools/release_manager.py from the source tree.",
+                "evidence": {
+                    "builder": "release_manager.py",
+                    "python": sys.version.split()[0],
+                    "build_report": f"reconpro-{version}-build-report.json",
+                },
+            },
+            {
+                "step": "artifact",
+                "description": "Release artifacts with pinned hashes.",
+                "evidence": {
+                    "artifacts": [
+                        {"name": p.name, "sha256": sha256_file(p),
+                         "size_bytes": p.stat().st_size}
+                        for p in artifacts
+                    ],
+                },
+            },
+            {
+                "step": "signature",
+                "description": "SHA256SUMS signed with Ed25519 (+GPG detach-sig when available).",
+                "evidence": {
+                    "signed_file": SUMS_NAME,
+                    "methods": sig_files,
+                    "ed25519_public_key_hex": (
+                        PUB_KEY_FILE.read_text().strip()
+                        if PUB_KEY_FILE.exists() else None
+                    ),
+                    "gpg_uid": GPG_UID,
+                },
+            },
+            {
+                "step": "user",
+                "description": "Users verify with: sha256sum -c SHA256SUMS, then the Ed25519 "
+                              "signature (tools/keys/release_key.pub) or gpg --verify.",
+                "evidence": {"verification_command": "tools/release_manager.py verify"},
+            },
+        ],
+        "sbom": f"reconpro-{version}-sbom.cdx.json",
+        "release_manifest": "RELEASE_MANIFEST.json",
+    }
+    out_path = DIST / "PROVENANCE.json"
+    out_path.write_text(json.dumps(provenance, indent=2) + "\n")
+    log("provenance", f"wrote {out_path.relative_to(REPO)} "
+        f"(commit {str(commit)[:12] if commit else '?'}, "
+        f"{len(artifacts)} artifacts, signatures: "
+        f"{[k for k, v in sig_files.items() if v]})")
+    if dirty:
+        log("provenance", "WARNING: source tree is DIRTY — commit everything before "
+            "the real release so the provenance commit hash is meaningful")
+    return 0
+
+
+def cmd_compare(args) -> int:
+    """Artifact comparison: local dist/ vs the PUBLISHED release.
+
+    Downloads the PyPI wheel/sdist (via pip download) and the GitHub
+    release SHA256SUMS for *version*, then compares hashes with the
+    local build.  Exit 0 = published bytes match the local build.
+    """
+    import urllib.request
+
+    version = args.version or read_version()
+    ok = True
+    with tempfile.TemporaryDirectory(prefix="rp-compare-") as td:
+        tdp = Path(td)
+        # 1. PyPI artifacts
+        log("compare", f"downloading reconpro=={version} from PyPI …")
+        code, out = run(
+            [sys.executable, "-m", "pip", "download", "--no-deps", "--dest", str(tdp),
+             f"reconpro=={version}"],
+            REPO, timeout=300,
+        )
+        if code != 0:
+            log("compare", f"FAIL: pip download from PyPI failed: {out[-300:]}")
+            return 1
+        for remote in sorted(tdp.glob("reconpro-*")):
+            local = DIST / remote.name
+            if not local.exists():
+                log("compare", f"FAIL: PyPI artifact {remote.name} has no local counterpart")
+                ok = False
+                continue
+            rh, lh = sha256_file(remote), sha256_file(local)
+            if rh == lh:
+                log("compare", f"MATCH: {remote.name} ({rh[:16]}…)")
+            else:
+                log("compare", f"DIFFER: {remote.name}: pypi {rh[:16]}… vs local {lh[:16]}…")
+                ok = False
+        # 2. GitHub release SHA256SUMS
+        gh_sums_url = (f"https://github.com/falconxa0-commits/reconpro/releases/"
+                       f"download/v{version}/SHA256SUMS")
+        try:
+            with urllib.request.urlopen(gh_sums_url, timeout=60) as resp:
+                gh_sums = resp.read().decode()
+            gh_path = tdp / "github_SHA256SUMS"
+            gh_path.write_text(gh_sums)
+            log("compare", f"downloaded GitHub release SHA256SUMS ({len(gh_sums.splitlines())} entries)")
+            for line in gh_sums.splitlines():
+                if not line.strip():
+                    continue
+                digest, name = line.split(None, 1)
+                name = name.strip()
+                local = DIST / name
+                if not local.exists():
+                    log("compare", f"note: GitHub release lists {name} not present locally")
+                    continue
+                if sha256_file(local) == digest:
+                    log("compare", f"MATCH: {name} equals published GitHub asset")
+                else:
+                    log("compare", f"DIFFER: {name} local bytes != published GitHub asset")
+                    ok = False
+        except Exception as exc:
+            log("compare", f"note: GitHub release SHA256SUMS not reachable ({exc}); "
+                f"compared PyPI artifacts only")
+    log("compare", "RESULT: " + ("PUBLISHED ARTIFACTS MATCH LOCAL BUILD" if ok else "MISMATCH DETECTED"))
+    return 0 if ok else 1
+
+
 def cmd_all(args) -> int:
-    steps = [("build", cmd_build), ("sbom", cmd_sbom), ("checksums", cmd_checksums), ("sign", cmd_sign)]
+    steps = [("build", cmd_build), ("sbom", cmd_sbom), ("checksums", cmd_checksums), ("sign", cmd_sign), ("provenance", cmd_provenance)]
     for name, fn in steps:
         log("all", f"===== step: {name} =====")
         code = fn(args)
@@ -955,17 +1193,20 @@ def main() -> int:
         description="ReconPro release engineering: build, SBOM, checksums, signatures, verification.",
     )
     sub = parser.add_subparsers(dest="command", required=True)
-    for name in ("build", "sbom", "checksums", "sign", "verify", "all"):
+    for name in ("build", "sbom", "checksums", "sign", "verify", "all", "provenance"):
         p = sub.add_parser(name, help=f"run the {name} step")
         p.add_argument("--reproducible", action="store_true",
                        help="pin SOURCE_DATE_EPOCH deterministically from the version "
                             "and rebuild in a clean copy to test byte-identity")
+    p_cmp = sub.add_parser("compare", help="compare local dist/ against the PUBLISHED PyPI/GitHub artifacts")
+    p_cmp.add_argument("--version", default=None, help="version to compare (default: pyproject version)")
     sub.add_parser("publish-dry-run", help="validate wheel metadata; NEVER uploads")
     args = parser.parse_args()
     handlers = {
         "build": cmd_build, "sbom": cmd_sbom, "checksums": cmd_checksums,
         "sign": cmd_sign, "verify": cmd_verify, "all": cmd_all,
-        "publish-dry-run": cmd_publish_dry_run,
+        "publish-dry-run": cmd_publish_dry_run, "provenance": cmd_provenance,
+        "compare": cmd_compare,
     }
     return handlers[args.command](args)
 
