@@ -4,6 +4,9 @@ __pycache__/
 *.egg-info/
 build/
 dist/
+# Exception: the TypeScript SDK ships its compiled dist/ (index.js +
+# index.d.ts) so plain-Node consumers need zero build steps.
+!sdks/typescript/dist/
 .pytest_cache/
 .bench/
 .ruff_cache/
