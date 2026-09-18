@@ -110,6 +110,33 @@ claim below was executed and re-verified, commands and outputs recorded.
 6. **`reconpro doctor` network check** reaches `dns.google` — fine for
    online machines; air-gapped users see an honest "unreachable" line.
 
+## 3b. Release evidence — v11.2.0 shipped & verified (post-report update)
+
+- **GitHub release:** https://github.com/falconxa0-commits/reconpro/releases/tag/v11.2.0
+  (tag on commit `9cd481b`; built + signed IN CI by the Release workflow).
+  10 assets: wheel, sdist, SBOM, SHA256SUMS, Ed25519 hex+binary sigs,
+  GPG detach-sig, RELEASE_MANIFEST.json, PROVENANCE.json, build report.
+- **PyPI:** https://pypi.org/project/reconpro/11.2.0/ — uploaded from the
+  CI-built, signature-verified artifacts.
+- **Signature verification (downloaded release assets):**
+  `sha256sum -c SHA256SUMS` → all OK; Ed25519 → VALID against the
+  in-repo published key (`5a6bc09f…`); GPG → **Good signature from
+  `5F3D 637E FDE1 E8F5 6568 BEE0 2331 2E75 1E3F 9F89`** — the published
+  key (the v11.1.0 gap is closed: CI now signs with a persistent GPG key
+  imported from a repository secret).
+- **Key rotation:** both release keys rotated at v11.2.0
+  (publish-before-first-use), documented in docs/keys/README.md and
+  docs/RELEASES.md; v11.1.0-era public keys preserved at the `v11.1.0`
+  tag for historical verification.
+- **Post-publish audit:** PyPI wheel + sdist downloaded and proven
+  byte-identical to the signed GitHub release assets.
+- **Release tests on the PUBLISHED package:** `RECONPRO_TEST_PYPI=1
+  bash tools/release_test.sh` → 6/6 PASSED (fresh venv, PyPI install,
+  CLI smoke, honest-scan semantics, JSON/SARIF truth fields, hash
+  re-verification).
+- **CI on the release commits:** CI ✓, SDKs (Go/Rust/TypeScript) ✓,
+  ReconPro Scan ✓, Release workflow ✓ (run 35304263393).
+
 ## 4. Definition-of-success check
 
 > "A security platform with a trustworthy CLI, verifiable releases,
