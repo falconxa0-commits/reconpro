@@ -327,37 +327,37 @@ PERFECT_RESPONSE_DB: Dict[str, List[Dict[str, Any]]] = {
             "suspicion": 0.3,
         },
         {
-            "pattern": r"<(?i)head>.*</(?i)head>\s*<(?i)body>.*</(?i)body>",
+            "pattern": r"<head>.*</head>\s*<body>.*</body>",
             "name": "head_and_body_present",
             "description": "Error page has both <head> and <body> — extremely clean structure",
             "suspicion": 0.4,
         },
         {
-            "pattern": r"<(?i)title>\d{3}\s*(?i)(Not Found|Forbidden|Bad Request|Error|Internal Server Error|Unauthorized|Moved)</(?i)title>",
+            "pattern": r"<title>\d{3}\s*(Not Found|Forbidden|Bad Request|Error|Internal Server Error|Unauthorized|Moved)</title>",
             "name": "status_in_title_tag",
             "description": "HTTP status code in <title> — polished template behavior",
             "suspicion": 0.5,
         },
         {
-            "pattern": r"<(?i)(h[1-6])>\s*\d{3}\s*(?i)(Not Found|Forbidden|Bad Request|Error|Internal Server Error|Unauthorized|Moved)\s*</(?i)(h[1-6])>",
+            "pattern": r"<(h[1-6])>\s*\d{3}\s*(Not Found|Forbidden|Bad Request|Error|Internal Server Error|Unauthorized|Moved)\s*</(h[1-6])>",
             "name": "status_in_heading",
             "description": "HTTP status code in heading tag — templated honeypot error pages",
             "suspicion": 0.5,
         },
         {
-            "pattern": r"(?i)(please contact|if you believe|if the problem|try again later|report this|administrator has been notified)",
+            "pattern": r"(please contact|if you believe|if the problem|try again later|report this|administrator has been notified)",
             "name": "helpful_error_message",
             "description": "Overly helpful error text — real servers rarely say 'contact administrator'",
             "suspicion": 0.6,
         },
         {
-            "pattern": r"(?i)nginx/[\d.]+\s*$",
+            "pattern": r"nginx/[\d.]+\s*$",
             "name": "nginx_default_error",
             "description": "Stock nginx error page — often used by honeypots for simplicity",
             "suspicion": 0.3,
         },
         {
-            "pattern": r"(?i)apache.*(tomcat|httpd) at \S+ port",
+            "pattern": r"apache.*(tomcat|httpd) at \S+ port",
             "name": "apache_default_error",
             "description": "Stock Apache error page with server info — common honeypot pattern",
             "suspicion": 0.3,
@@ -1425,9 +1425,9 @@ def _analyze_interaction_patterns(
         # Indicator 2: Perfectly formatted error for malformed request
         if status in (400, 403, 404, 405, 500):
             if re.search(
-                r"<(?i)(!doctype|html)", resp_body
+                r"<!doctype|<html", resp_body, re.IGNORECASE
             ) and re.search(
-                r"<(?i)/\s*(html|body)>\s*$", resp_body, re.MULTILINE
+                r"</\s*(html|body)>\s*$", resp_body, re.MULTILINE | re.IGNORECASE
             ):
                 is_honeypot_like = True
                 reason = f"Perfectly structured HTML error page for {method} {payload['path']}"

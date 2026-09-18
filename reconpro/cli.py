@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import argparse
+import difflib
 import json
 import os
+import re
 import sys
 import time
 from datetime import datetime, timezone
@@ -33,6 +35,83 @@ BANNER = r"""[bold bright_white]
 """
 
 # Colors imported from constants.py
+
+
+# ── Unknown-command guard ───────────────────────────────────────────────
+# `reconpro <word>` where <word> is NOT a registered subcommand used to
+# silently become a scan target. A typo like `reconpro scna example.com`
+# then hung the CLI probing a nonexistent host. Now an unknown first word
+# only survives if it looks like a real scan target (URL / IPv4 / dotted
+# domain / localhost); anything else is rejected with exit code 2 before
+# any network activity can start.
+_SCAN_TARGET_RE = re.compile(
+    r"^(?:"
+    r"https?://\S+"                                   # absolute URL
+    r"|localhost(?::\d+)?(?:/\S*)?"                  # localhost[:port][/path]
+    r"|(?:\d{1,3}\.){3}\d{1,3}(?::\d+)?(?:/\S*)?"    # IPv4[:port][/path]
+    r"|(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+"  # dotted labels
+    r"[a-zA-Z]{2,}(?::\d+)?(?:/\S*)?"                # …TLD[:port][/path]
+    r")$"
+)
+
+
+def looks_like_scan_target(token: str) -> bool:
+    """True if *token* is a plausible scan target (URL, IPv4, dotted domain
+    or localhost).  Used to keep the `reconpro example.com` shorthand while
+    rejecting mistyped subcommands like `reconpro scna`.
+    """
+    if not token or len(token) > 2048:
+        return False
+    return _SCAN_TARGET_RE.match(token) is not None
+
+
+def _positive_int(lo: int = 1, hi: int = 600):
+    """argparse type: integer bounded to [lo, hi] (default 1-600).
+
+    Rejects zero/negative/absurd values BEFORE any scan starts — a
+    negative timeout previously poisoned every socket call downstream.
+    """
+    def _check(value: str) -> int:
+        try:
+            iv = int(value)
+        except (TypeError, ValueError):
+            raise argparse.ArgumentTypeError(f"invalid integer value: {value!r}")
+        if iv < lo or iv > hi:
+            raise argparse.ArgumentTypeError(
+                f"value must be between {lo} and {hi}, got {iv}")
+        return iv
+    return _check
+
+
+def _positive_float(lo: float = 0.1, hi: float = 1000.0):
+    """argparse type: float bounded to [lo, hi] (default 0.1-1000)."""
+    def _check(value: str) -> float:
+        try:
+            fv = float(value)
+        except (TypeError, ValueError):
+            raise argparse.ArgumentTypeError(f"invalid float value: {value!r}")
+        if fv < lo or fv > hi:
+            raise argparse.ArgumentTypeError(
+                f"value must be between {lo} and {hi}, got {fv}")
+        return fv
+    return _check
+
+
+def _reject_unknown_command(token: str, choices) -> None:
+    """Exit code 2 with a helpful, non-scanning error for an unknown command."""
+    suggestion = difflib.get_close_matches(token, list(choices), n=1, cutoff=0.6)
+    hint = f"\nDid you mean: {suggestion[0]}?" if suggestion else ""
+    sys.stderr.write(
+        f"error: unknown command '{token}'{hint}\n"
+        f"\n"
+        f"Usage: reconpro <command> [args]\n"
+        f"\n"
+        f"* Run 'reconpro --help' for the full command list.\n"
+        f"* If you meant to scan a target, be explicit:\n"
+        f"      reconpro scan {token}\n"
+    )
+    raise SystemExit(2)
+
 
 
 # ── Rich rendering ──────────────────────────────────────────────────────
@@ -90,12 +169,14 @@ def _render_summary(result, title: str = "RECONPRO") -> None:
     bar_width = 50
     filled = int(score / 100 * bar_width)
     bar = "█" * filled + "░" * (bar_width - filled)
+    # NOTE: Text(...) renders markup LITERALLY — use Text.from_markup()
+    # (or plain strings) so [cyan]/[dim] tags actually style the output.
     lines = [
-        Text(f"\n  {bar} [bold {grade_color}]{score}/100 ({grade})[/{grade_color}]"),
-        Text(f"\n  Target: [cyan]{result.target}[/]"),
-        Text(f"  Modules: [dim]{', '.join(result.modules_run)}[/]"),
+        Text.from_markup(f"\n  {bar} [bold {grade_color}]{score}/100 ({grade})[/]"),
+        Text.from_markup(f"\n  Target: [cyan]{escape(result.target)}[/]"),
+        Text.from_markup(f"  Modules: [dim]{escape(', '.join(result.modules_run))}[/]"),
         Text(""),
-        Text(
+        Text.from_markup(
             f"  Findings: [bold]{total}[/]  "
             f"[bright_red]{sc.get('critical', 0)} critical[/], "
             f"[red]{sc.get('high', 0)} high[/], "
@@ -104,8 +185,24 @@ def _render_summary(result, title: str = "RECONPRO") -> None:
             f"[dim]{sc.get('info', 0)} info[/]",
         ),
     ]
+    # Truth layer — surface the target verification state.
+    tv = getattr(result, "target_validation", None)
+    if tv:
+        state = tv.get("state", "UNKNOWN")
+        state_style = {
+            "VERIFIED_TARGET": "bold bright_green",
+            "PARTIAL_TARGET": "bold yellow",
+            "UNREACHABLE_TARGET": "bold bright_red",
+        }.get(state, "bold yellow")
+        reason = tv.get("details", {}).get("reason", "")
+        state_line = Text.from_markup(f"\n  Target State: [{state_style}]{state}[/]")
+        if reason and state != "VERIFIED_TARGET":
+            state_line.append_text(
+                Text.from_markup(f"  [dim]— {escape(reason[:100])}[/]")
+            )
+        lines.append(state_line)
     if result.vibesec_score is not None:
-        lines.append(Text(
+        lines.append(Text.from_markup(
             f"\n  VibeSec Score: [bold bright_green]{result.vibesec_score}/100 ({result.vibesec_grade})[/]"
         ))
     console.print(Panel(Group(*lines), border_style=grade_color,
@@ -624,7 +721,71 @@ def _load_heavy() -> None:
     })
 
 
+# Interactive Textual apps manage their own keyboard handling (terminal is
+# in raw mode, so ^C never generates SIGINT).  Every other command gets the
+# deterministic force-exit SIGINT handler.
+_TUI_COMMANDS = {"nexus", "tui", "chat", "agent", "copilot"}
+
+
+def _install_sigint_handler() -> None:
+    """Make Ctrl+C stop the CLI *immediately* with exit code 130.
+
+    Why a signal handler instead of catching KeyboardInterrupt: the
+    cooperative path deadlocks.  py-spy evidence (2026-09 audit): during a
+    scan, SIGINT interrupts the event loop, then ``asyncio.run``'s cleanup
+    joins the default-executor worker threads — which sit in long socket
+    reads (crt.sh lookups, port probes).  The main thread then blocks in
+    ``runners.py:close`` and the KeyboardInterrupt NEVER reaches the CLI,
+    so the process hangs for minutes with no output.
+
+    The handler writes directly to fd 2 (no locks, safe from a signal
+    context — Rich's live display owns its own thread lock) and force-exits
+    with the conventional 130 = 128 + SIGINT(2).
+    """
+    import signal
+
+    def _handler(signum: int, frame) -> None:  # pragma: no cover - signal path
+        try:
+            os.write(2, b"\nInterrupted \xe2\x80\x94 scan aborted by user (exit 130).\n")
+        except Exception:
+            pass
+        os._exit(130)
+
+    try:
+        signal.signal(signal.SIGINT, _handler)
+    except (ValueError, OSError):
+        # Not the main thread of the process (API embedding) — keep the
+        # cooperative KeyboardInterrupt path in that case.
+        pass
+
+
 def main(argv: list[str] | None = None) -> None:
+    """CLI entry point — graceful SIGINT handling + structured exit codes.
+
+    Exit codes:
+        0    success (including honest no-result scans)
+        1    runtime error (no scan data, missing input, etc.)
+        2    usage error (unknown command, bad argument values)
+        130  interrupted by SIGINT (Ctrl+C)
+    """
+    try:
+        return _main_impl(argv)
+    except KeyboardInterrupt:
+        # Belt-and-braces: normally SIGINT is handled by the deterministic
+        # handler installed in _main_impl (see _install_sigint_handler).
+        # If a KeyboardInterrupt still surfaces here (e.g. an API consumer
+        # calling main() in-process), exit cleanly instead of dumping an
+        # asyncio traceback.
+        try:
+            console.print("\n  [bold yellow]Interrupted — scan aborted by user (exit 130).[/]")
+            sys.stdout.flush()
+            sys.stderr.flush()
+        except Exception:
+            pass
+        raise SystemExit(130)
+
+
+def _main_impl(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(
         prog="reconpro",
         description=(
@@ -689,9 +850,9 @@ def main(argv: list[str] | None = None) -> None:
     p.add_argument("--all", "-a", action="store_true")
     p.add_argument("--json", dest="json_output", action="store_true")
     p.add_argument("-o", "--output", dest="output_file", type=str)
-    p.add_argument("--timeout", "-t", type=int, default=8)
+    p.add_argument("--timeout", "-t", type=_positive_int(1, 600), default=8)
     p.add_argument("--insecure", "-k", action="store_true")
-    p.add_argument("--rate-limit", type=float, default=10.0)
+    p.add_argument("--rate-limit", type=_positive_float(0.1, 1000.0), default=10.0)
     p.add_argument("--engineering", action="store_true", help="Run engineering pipeline after scan")
     p.add_argument("--intelligence", action="store_true", help="Enable intelligence pipeline (default: on)")
     p.add_argument("--no-intelligence", action="store_true", help="Disable intelligence pipeline")
@@ -703,9 +864,9 @@ def main(argv: list[str] | None = None) -> None:
     p.add_argument("target", help="Target domain or URL")
     p.add_argument("--json", dest="json_output", action="store_true")
     p.add_argument("-o", "--output", dest="output_file", type=str)
-    p.add_argument("--timeout", "-t", type=int, default=8)
+    p.add_argument("--timeout", "-t", type=_positive_int(1, 600), default=8)
     p.add_argument("--insecure", "-k", action="store_true")
-    p.add_argument("--rate-limit", type=float, default=10.0)
+    p.add_argument("--rate-limit", type=_positive_float(0.1, 1000.0), default=10.0)
 
     # ── audit ────────────────────────────────────────────────────
     p = sub.add_parser("audit", help="Full machine audit (ports, firewall, SSH, Docker, env, files)")
@@ -949,7 +1110,7 @@ def main(argv: list[str] | None = None) -> None:
     p = sub.add_parser("wishes", help="Execute 22-Wish orchestration ritual against a target")
     p.add_argument("target", help="Target domain or URL")
     p.add_argument("--modules", "-m", type=str, default=None, help="Comma-separated modules to include")
-    p.add_argument("--timeout", type=int, default=8)
+    p.add_argument("--timeout", type=_positive_int(1, 600), default=8)
     p.add_argument("--insecure", "-k", action="store_true", help="Skip TLS verification")
     p.add_argument("--json", dest="json_output", action="store_true", help="Output as JSON")
 
@@ -969,7 +1130,7 @@ def main(argv: list[str] | None = None) -> None:
     # ── ai-redteam (v9.1.0 AI Red Team) ──────────────────────────
     p = sub.add_parser("ai-redteam", help="AI endpoint discovery, vendor fingerprinting, secret extraction")
     p.add_argument("target", help="Target domain or URL")
-    p.add_argument("--timeout", type=int, default=8)
+    p.add_argument("--timeout", type=_positive_int(1, 600), default=8)
     p.add_argument("--insecure", "-k", action="store_true", help="Skip TLS verification")
     p.add_argument("--json", dest="json_output", action="store_true", help="Output as JSON")
 
@@ -987,7 +1148,7 @@ def main(argv: list[str] | None = None) -> None:
     # ── quantum-fingerprint (v9.2.0 TCP/IP Stack Fingerprinting via HTTP Timing) ──
     p = sub.add_parser("quantum-fingerprint", help="OS & TCP stack fingerprinting via HTTP timing analysis")
     p.add_argument("target", help="Domain or URL to fingerprint")
-    p.add_argument("-t", "--timeout", type=int, default=15, help="Per-probe timeout (default: 15)")
+    p.add_argument("-t", "--timeout", type=_positive_int(1, 600), default=15, help="Per-probe timeout (default: 15)")
     p.add_argument("-k", "--insecure", action="store_true", help="Skip TLS verification")
     p.add_argument("--json", dest="json_output", action="store_true", help="Output as JSON")
 
@@ -1159,11 +1320,22 @@ def main(argv: list[str] | None = None) -> None:
         argv = sys.argv[1:]
     argv = list(argv)
     # Implicit scan shorthand: `reconpro <target> [flags]` → `reconpro scan ...`
+    # STRICT GUARD: only arguments that look like real scan targets (URLs,
+    # IPv4/IPv6 literals, dotted domains, localhost) keep the shorthand.
+    # Anything else (e.g. a typo'd subcommand) must fail fast with exit 2
+    # BEFORE any network activity — never silently start a scan.
     if argv and not argv[0].startswith("-") and argv[0] not in sub.choices:
-        argv = ["scan"] + argv
+        if looks_like_scan_target(argv[0]):
+            argv = ["scan"] + argv
+        else:
+            _reject_unknown_command(argv[0], sub.choices)
     args = parser.parse_args(argv)
     _cli_args = args
     cmd = args.subcommand
+
+    # Deterministic Ctrl+C for everything that is not an interactive TUI.
+    if cmd not in _TUI_COMMANDS:
+        _install_sigint_handler()
     remaining: list[str] = []  # strict mode: never populated (kept for compat)
 
     # Fast paths skip the heavy engine import (~300 ms) entirely.

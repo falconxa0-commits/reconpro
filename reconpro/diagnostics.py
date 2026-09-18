@@ -404,7 +404,7 @@ def validate_config() -> List[Dict[str, Any]]:
     if config_file.exists():
         try:
             import json
-            with open(config_file, "r") as f:
+            with open(config_file, "r", encoding="utf-8", errors="strict") as f:
                 cfg = json.load(f)
             if not isinstance(cfg, dict):
                 issues.append({
@@ -419,6 +419,15 @@ def validate_config() -> List[Dict[str, Any]]:
                 "category": "config",
                 "message": f"config.json has invalid JSON: {e}",
                 "suggestion": "Fix JSON syntax in config.json.",
+            })
+        except (UnicodeDecodeError, OSError) as e:
+            # Binary/corrupted/unreadable config must never crash the doctor
+            issues.append({
+                "severity": "error",
+                "category": "config",
+                "message": f"config.json is unreadable or corrupted: {e}",
+                "suggestion": "Delete config.json to regenerate defaults: "
+                              f"rm {config_file}",
             })
     else:
         issues.append({

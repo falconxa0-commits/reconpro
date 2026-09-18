@@ -11,6 +11,7 @@ All constants come from constants.py.
 from __future__ import annotations
 
 import logging
+import time
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
@@ -24,6 +25,10 @@ from .http_layer import Finding, RateLimiter
 from .utils import (
     extract_host, normalize_base_url, validate_target,
     count_severities, compute_score, compute_grade, badge_markdown,
+)
+from .target_validation import (
+    validate_target_pipeline, apply_target_truth, unreachable_finding,
+    UNREACHABLE_TARGET,
 )
 
 
@@ -44,6 +49,9 @@ class ReconProResult:
     engineering: Optional[Dict[str, Any]] = None
     quality: Optional[Dict[str, Any]] = None
     engineering_score: float = 0.0
+    # Truth layer — target validation pipeline outcome (None for local audits)
+    target_validation: Optional[Dict[str, Any]] = None
+    scan_metadata: Optional[Dict[str, Any]] = None
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -62,6 +70,8 @@ class ReconProResult:
             "engineering": self.engineering,
             "quality": self.quality,
             "engineering_score": round(self.engineering_score, 1),
+            "target_validation": self.target_validation,
+            "scan_metadata": self.scan_metadata,
         }
 
 
@@ -90,6 +100,31 @@ def scan(
     valid, reason = validate_target(target)
     if not valid:
         raise ValueError(f"Invalid scan target: {reason}")
+
+    # ── Truth layer: Target Validation Pipeline ─────────────────────
+    # DNS → Reachability → HTTP/TLS → decision.  An unreachable target
+    # must NEVER produce module findings (let alone HIGH severity ones).
+    from datetime import datetime, timezone as _tz
+    _meta_t0 = time.monotonic()
+    validation = validate_target_pipeline(target, timeout=min(float(timeout), 5.0), verify_tls=verify_tls)
+    if validation.state == UNREACHABLE_TARGET:
+        f = unreachable_finding(target, validation)
+        return ReconProResult(
+            target=extract_host(target),
+            modules_run=[],
+            findings=[f.to_dict()],
+            severity_counts=count_severities([f]),
+            total_score=0,
+            grade="U",
+            badge_markdown=badge_markdown(extract_host(target), "U"),
+            target_validation=validation.to_dict(),
+            scan_metadata={
+                "scanner": "reconpro",
+                "started_at": datetime.now(_tz.utc).isoformat(),
+                "duration_s": round(time.monotonic() - _meta_t0, 2),
+                "result": "unreachable_target_short_circuit",
+            },
+        )
 
     # Create dedicated rate limiter (no global mutation)
     limiter = RateLimiter(rate_limit)
@@ -154,6 +189,15 @@ def scan(
     # Count severities using shared utility
     sev_counts = count_severities(all_findings)
 
+    # ── Truth layer: tag every finding with the verification state ──
+    # (also caps severity at MEDIUM for PARTIAL_TARGET — no HIGH/CRITICAL
+    #  claims against a target we could not fully validate)
+    apply_target_truth(all_findings, validation)
+    total_score = compute_score(all_findings)
+    grade = compute_grade(total_score)
+    badge = badge_markdown(host, grade)
+    sev_counts = count_severities(all_findings)
+
     return ReconProResult(
         target=host,
         modules_run=mods,
@@ -165,6 +209,13 @@ def scan(
         vibesec_score=vibesec_score,
         vibesec_grade=vibesec_grade,
         module_results=module_results,
+        target_validation=validation.to_dict(),
+        scan_metadata={
+            "scanner": "reconpro",
+            "started_at": validation.checked_at,
+            "duration_s": round(time.monotonic() - _meta_t0, 2),
+            "result": "modules_executed",
+        },
     )
 
 

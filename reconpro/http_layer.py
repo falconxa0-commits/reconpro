@@ -167,6 +167,12 @@ class Finding:
     points_deducted: int = 0
     remediation: str = ""
     dread_score: float = 0.0
+    # Truth layer — every finding carries how much it can be trusted:
+    #   confidence:          0.0–1.0 estimate of the finding's reliability
+    #   verification_state:  VERIFIED_TARGET | PARTIAL_TARGET | UNREACHABLE_TARGET
+    #   (set by target_validation.apply_target_truth after the pipeline runs)
+    confidence: float = 0.8
+    verification_state: str = "UNVERIFIED"
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -180,6 +186,8 @@ class Finding:
             "points_deducted": self.points_deducted,
             "remediation": self.remediation,
             "dread_score": self.dread_score,
+            "confidence": self.confidence,
+            "verification_state": self.verification_state,
         }
 
 

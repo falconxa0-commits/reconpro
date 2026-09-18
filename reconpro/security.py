@@ -226,8 +226,29 @@ _SECRET_PATTERNS: List[Tuple[str, re.Pattern[str], str]] = [
         "high",
     ),
     (
+        # AWS STS temporary credentials (same shape as AKIA, ASIA prefix)
+        "aws_key_temporary",
+        re.compile(r'ASIA[0-9A-Z]{16}'),
+        "high",
+    ),
+    (
+        # AWS secret access key in an assignment context (40 base64 chars)
+        "aws_secret_access_key",
+        re.compile(
+            r'aws_secret_access_key\s*[=:]\s*["\']?([A-Za-z0-9/+=]{40})["\']?',
+            re.IGNORECASE,
+        ),
+        "critical",
+    ),
+    (
         "github_token",
         re.compile(r'ghp_[A-Za-z0-9]{36}'),
+        "high",
+    ),
+    (
+        # GitHub OAuth / user / server / refresh tokens share ghp_'s shape
+        "github_token_variant",
+        re.compile(r'gh[ousr]_[A-Za-z0-9]{36,45}'),
         "high",
     ),
     (
@@ -236,8 +257,31 @@ _SECRET_PATTERNS: List[Tuple[str, re.Pattern[str], str]] = [
         "high",
     ),
     (
+        "gitlab_token",
+        re.compile(r'glpat-[A-Za-z0-9_\-]{20,}'),
+        "high",
+    ),
+    (
+        "openai_api_key",
+        re.compile(r'sk-(?:proj-)?[A-Za-z0-9_\-]{40,}'),
+        "high",
+    ),
+    (
+        "anthropic_api_key",
+        re.compile(r'sk-ant-[A-Za-z0-9_\-]{20,}'),
+        "high",
+    ),
+    (
+        "vault_token",
+        re.compile(r'hvs\.[A-Za-z0-9_\-]{20,}'),
+        "medium",
+    ),
+    (
+        # NOTE: bare "key" removed from the alternation — it matched every
+        # JSON/dict entry ("key": "value") and was the #1 false-positive
+        # source.  A \b boundary prevents "monkey=" matching "key=".
         "generic_api_key",
-        re.compile(r'(?:api_key|apikey|key|token|secret|password)\s*[=:]\s*["\']?([A-Za-z0-9_\-]{20,})["\']?', re.IGNORECASE),
+        re.compile(r'\b(?:api[_-]?key|apikey|token|secret|password)\b\s*[=:]\s*["\']?([A-Za-z0-9_\-]{20,})["\']?', re.IGNORECASE),
         "medium",
     ),
     (
@@ -256,13 +300,18 @@ _SECRET_PATTERNS: List[Tuple[str, re.Pattern[str], str]] = [
         "critical",
     ),
     (
+        "private_key_openssh",
+        re.compile(r'-----BEGIN\s+OPENSSH\s+PRIVATE\s+KEY-----'),
+        "critical",
+    ),
+    (
         "password_in_url",
         re.compile(r'https?://[^:]+:([^@]{3,})@[^\s]+'),
         "high",
     ),
     (
         "db_connection_string",
-        re.compile(r'(?:mongodb|mysql|postgres|postgresql|redis|amqp)://[^\s"\']+[:@][^\s"\']+', re.IGNORECASE),
+        re.compile(r'(?:mongodb(?:\+srv)?|mysql|postgres|postgresql|redis|amqp|mssql|oracle)://[^\s"\']+[:@][^\s"\']+', re.IGNORECASE),
         "high",
     ),
     (

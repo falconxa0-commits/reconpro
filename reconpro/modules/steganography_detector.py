@@ -1364,11 +1364,11 @@ def run_steganography_detector(
         raw_body = body.encode("utf-8", errors="replace")
 
     # All 10 detection categories
-    findings.extend(_check_whitespace_steganography(body, ct, host))
-    findings.extend(_check_base64_anomalies(body, host))
+    findings.extend(_check_whitespace_steganography(body, ct))
+    findings.extend(_check_base64_anomalies(body))
     findings.extend(_check_header_steganography(headers, host))
     findings.extend(_check_image_lsb(raw_body, ct))
-    findings.extend(_check_css_steganography(body, ct, host))
+    findings.extend(_check_css_steganography(body, ct))
     findings.extend(_check_js_variables(body, ct, host))
     findings.extend(_check_response_size(body, headers))
     findings.extend(_check_charset(body, headers, host))

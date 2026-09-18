@@ -679,6 +679,8 @@ class TestReconProResultToDict(unittest.TestCase):
             "module_results", "findings", "intelligence",
             # v11 pipeline additions (engineering + quality intelligence)
             "engineering", "engineering_score", "quality",
+            # truth layer additions (target validation + scan metadata)
+            "target_validation", "scan_metadata",
         }
         self.assertEqual(set(d.keys()), expected_keys)
         self.assertEqual(d["vibesec_score"], 75)

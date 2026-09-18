@@ -104,6 +104,8 @@ def export_sarif(data: Dict[str, Any], output_path: str) -> str:
                 "points_deducted": f.get("points_deducted", 0),
                 "evidence": f.get("evidence", "")[:200],
                 "remediation": f.get("remediation", ""),
+                "confidence": f.get("confidence", 0.8),
+                "verification_state": f.get("verification_state", "UNVERIFIED"),
             },
         }
 
@@ -131,6 +133,13 @@ def export_sarif(data: Dict[str, Any], output_path: str) -> str:
         "grade": grade,
         "total_score": data.get("total_score", 0),
     }
+    # Truth layer — target validation state + scan metadata
+    tv = data.get("target_validation")
+    if tv:
+        run_properties["target_validation"] = tv
+    meta = data.get("scan_metadata")
+    if meta:
+        run_properties["scan_metadata"] = meta
     intel = data.get("intelligence")
     if intel:
         run_properties["intelligence"] = {
@@ -158,7 +167,9 @@ def export_sarif(data: Dict[str, Any], output_path: str) -> str:
                 "invocations": [
                     {
                         "executionSuccessful": True,
-                        "startTimeUtc": datetime.now(timezone.utc).isoformat(),
+                        "startTimeUtc": (data.get("scan_metadata") or {}).get(
+                            "started_at", datetime.now(timezone.utc).isoformat()
+                        ),
                     }
                 ],
                 "properties": run_properties,
@@ -211,7 +222,20 @@ def export_markdown(data: Dict[str, Any], output_path: str) -> str:
     lines.append(f"**Target:** `{target}`  ")
     lines.append(f"**Score:** {score}/100  ")
     lines.append(f"**Grade:** {grade}  ")
-    lines.append(f"**Generated:** {ts}\n")
+    # Truth layer — target validation state + scan metadata
+    tv = data.get("target_validation") or {}
+    if tv:
+        state = tv.get("state", "UNKNOWN")
+        lines.append(f"**Target State:** `{state}`  ")
+        if state != "VERIFIED_TARGET":
+            reason = (tv.get("details") or {}).get("reason", "")
+            if reason:
+                lines.append(f"**Validation:** {reason}  ")
+    meta = data.get("scan_metadata") or {}
+    scan_ts = (meta.get("started_at") or "").replace("T", " ").split(".")[0]
+    lines.append(f"**Generated:** {ts}  ")
+    if scan_ts:
+        lines.append(f"**Scan Started:** {scan_ts} UTC  ")
     lines.append(f"---\n")
 
     # Summary table
@@ -236,15 +260,25 @@ def export_markdown(data: Dict[str, Any], output_path: str) -> str:
     )
 
     if sorted_findings:
-        lines.append("| # | Severity | Category | Finding | Module | Pts |")
-        lines.append("|---|----------|----------|---------|--------|-----|")
+        lines.append("| # | Severity | Category | Finding | Module | Conf. | Pts |")
+        lines.append("|---|----------|----------|---------|--------|-------|-----|")
         for i, f in enumerate(sorted_findings, 1):
             sev = f.get("severity", "info").lower()
             title = f.get("title", "")
             cat = f.get("category", "")
             mod = f.get("module", "")
             pts = f.get("points_deducted", 0)
-            lines.append(f"| {i} | {sev} | `{cat}` | {title} | {mod} | -{pts} |")
+            conf = f.get("confidence", None)
+            conf_s = f"{round(conf * 100)}%" if isinstance(conf, (int, float)) else "—"
+            lines.append(f"| {i} | {sev} | `{cat}` | {title} | {mod} | {conf_s} | -{pts} |")
+        lines.append("")
+        # Evidence appendix — every finding must be reproducible
+        lines.append("### Evidence\n")
+        for i, f in enumerate(sorted_findings, 1):
+            ev = (f.get("evidence") or "").strip()
+            if ev:
+                lines.append(f"{i}. `{ev[:300]}`")
+        lines.append("")
     else:
         lines.append("> ✅ No findings. Target is clean.\n")
 
@@ -431,6 +465,7 @@ def export_pdf(data: Dict[str, Any], output_path: str) -> str:
     <div class="header-info">
       <h2>{_html_module.escape(str(target))} &mdash; Grade {_html_module.escape(str(grade))}</h2>
       <p>Total findings: {len(findings)} | Critical: {sc.get('critical',0)} | High: {sc.get('high',0)} | Medium: {sc.get('medium',0)}</p>
+      {_html_module.escape(str((data.get("target_validation") or {}).get("state", "")))}
     </div>
   </div>
 

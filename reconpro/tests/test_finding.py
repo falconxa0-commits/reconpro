@@ -91,6 +91,7 @@ class TestFindingToDict(unittest.TestCase):
             "title", "severity", "category", "module",
             "description", "evidence", "asset",
             "points_deducted", "remediation", "dread_score",
+            "confidence", "verification_state",
         }
         self.assertEqual(set(d.keys()), expected_keys)
 

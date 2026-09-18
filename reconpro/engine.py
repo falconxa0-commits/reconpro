@@ -22,6 +22,7 @@ import asyncio
 import json
 import logging
 import time
+from datetime import datetime, timezone
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional
 
@@ -37,7 +38,11 @@ from .registry import (
 )
 from .scanner import ReconProResult
 from .http_layer import Finding
-from .utils import compute_grade, badge_markdown, compute_score
+from .utils import compute_grade, badge_markdown, compute_score, count_severities
+from .target_validation import (
+    validate_target_pipeline, apply_target_truth, unreachable_finding,
+    UNREACHABLE_TARGET,
+)
 
 
 # ── Scan Event ──────────────────────────────────────────────────────────
@@ -79,6 +84,7 @@ class ScanEvent:
     duration: float = 0.0
     result: Optional[ReconProResult] = None
     modules: List[str] = field(default_factory=list)
+    validation: Optional[Dict[str, Any]] = None
     timestamp: float = field(default_factory=time.monotonic)
 
 
@@ -301,10 +307,13 @@ class ScanEngine:
         module_results: Dict[str, Dict[str, Any]],
         vibesec_score: Optional[int],
         vibesec_grade: Optional[str],
+        target_validation: Optional[Dict[str, Any]] = None,
+        scan_metadata: Optional[Dict[str, Any]] = None,
+        force_grade: Optional[str] = None,
     ) -> ReconProResult:
         """Aggregate findings into a ``ReconProResult`` identical to scanner.py."""
         total_score = compute_score(all_findings)
-        grade = compute_grade(total_score)
+        grade = force_grade if force_grade is not None else compute_grade(total_score)
         host = target.replace("https://", "").replace("http://", "").split("/")[0]
         badge = badge_markdown(host, grade)
 
@@ -323,6 +332,8 @@ class ScanEngine:
             vibesec_score=vibesec_score,
             vibesec_grade=vibesec_grade,
             module_results=module_results,
+            target_validation=target_validation,
+            scan_metadata=scan_metadata,
         )
 
     # -- single module execution -------------------------------------------
@@ -584,6 +595,51 @@ class ScanEngine:
         base_url = target if target.startswith("http") else f"https://{target}"
         host = target.replace("https://", "").replace("http://", "").split("/")[0]
 
+        # ── Truth layer: Target Validation Pipeline ────────────────────
+        # DNS → Reachability → HTTP/TLS → decision, run BEFORE any module.
+        validation = None
+        if not is_local:
+            _meta_t0 = time.monotonic()
+            try:
+                validation = await asyncio.to_thread(
+                    validate_target_pipeline, target,
+                    min(float(timeout), 5.0), verify_tls,
+                )
+            except Exception as val_err:  # validation itself must never kill a scan
+                logger.warning("Target validation failed, treating as PARTIAL: %s", val_err)
+                from .target_validation import TargetValidation, PARTIAL_TARGET
+                validation = TargetValidation(
+                    state=PARTIAL_TARGET, dns_resolved=False, reachable=False,
+                    http_ok=False, tls_valid=None,
+                    details={"reason": f"validation error: {val_err}"},
+                )
+            self._emit(ScanEvent(type="TARGET_VALIDATION", target=target,
+                                 validation=validation.to_dict()))
+            if validation.state == UNREACHABLE_TARGET:
+                # Honest short-circuit: no modules, no fabricated findings,
+                # score 0 / grade U. HIGH findings are impossible by design.
+                f = unreachable_finding(target, validation)
+                result = self._build_result(
+                    target=host,
+                    mods=[],
+                    all_findings=[f],
+                    module_results={},
+                    vibesec_score=None,
+                    vibesec_grade=None,
+                    target_validation=validation.to_dict(),
+                    scan_metadata={
+                        "scanner": "reconpro",
+                        "started_at": validation.checked_at,
+                        "duration_s": round(time.monotonic() - _meta_t0, 2),
+                        "result": "unreachable_target_short_circuit",
+                    },
+                    force_grade="U",
+                )
+                result.total_score = 0
+                self._emit(ScanEvent(type="SCAN_COMPLETE", target=target,
+                                     duration=0.0, findings_count=1))
+                return result
+
         self._emit(ScanEvent(type="SCAN_START", target=target, modules=list(mods)))
         try:
             from .plugins import HookManager
@@ -677,6 +733,11 @@ class ScanEngine:
         vibesec_score = vibesec_state.get("score")
         vibesec_grade = vibesec_state.get("grade")
 
+        # ── Truth layer: tag findings with the verification state ──────
+        # (severity capped at MEDIUM for PARTIAL_TARGET, in place)
+        if validation is not None:
+            apply_target_truth(all_findings, validation)
+
         result = self._build_result(
             target=host if not is_local else (target if target != "." else "local-audit"),
             mods=mods,
@@ -684,6 +745,14 @@ class ScanEngine:
             module_results=module_results,
             vibesec_score=vibesec_score,
             vibesec_grade=vibesec_grade,
+            target_validation=validation.to_dict() if validation is not None else None,
+            scan_metadata={
+                "scanner": "reconpro",
+                "started_at": validation.checked_at if validation is not None
+                              else datetime.now(timezone.utc).isoformat(),
+                "duration_s": round(scan_duration, 2),
+                "result": "modules_executed",
+            },
         )
 
         # ── Post-scan Secret Detection & Tamper-Evident Logging ──

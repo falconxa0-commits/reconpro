@@ -15,7 +15,7 @@ smoke: reconpro/tests/test_constants.py reconpro/tests/test_plugin_sdk.py reconp
 
 unit-core: reconpro/tests/test_interfaces.py reconpro/tests/test_property.py reconpro/tests/test_input_validation.py reconpro/tests/test_http_probe.py reconpro/tests/test_plugin_security.py reconpro/tests/test_security_regression.py reconpro/tests/test_security_hardening.py reconpro/tests/test_security_hardening_v2.py
 
-unit-security: reconpro/tests/test_security.py reconpro/tests/test_stress.py reconpro/tests/test_rate_limiter.py reconpro/tests/test_regression_v11.py reconpro/tests/test_intelligence_pipeline.py reconpro/tests/test_threat_intel.py reconpro/tests/test_repository_memory.py
+unit-security: reconpro/tests/test_truth_layer.py reconpro/tests/test_security.py reconpro/tests/test_stress.py reconpro/tests/test_rate_limiter.py reconpro/tests/test_regression_v11.py reconpro/tests/test_intelligence_pipeline.py reconpro/tests/test_threat_intel.py reconpro/tests/test_repository_memory.py
 
 unit-engineering: reconpro/tests/test_engineering_integration.py reconpro/tests/test_engineering_recommendations.py reconpro/tests/test_engineering_workflow.py reconpro/tests/test_repository_learning.py reconpro/tests/test_regression_intelligence.py reconpro/tests/test_auto_fix.py reconpro/tests/test_observability.py
 
@@ -32,6 +32,8 @@ cli-misc: reconpro/tests/test_cli.py reconpro/tests/test_diagnostics.py reconpro
 
 # slow-but-green (verified 2026-09-05, generous timeouts — they PASS,
 # they are just individually slow; run as their own chunk):
+modules: reconpro/tests/test_module_execution.py
+
 slow: reconpro/tests/test_auto_validation.py reconpro/tests/test_benchmark_automation.py reconpro/tests/test_integration.py reconpro/tests/test_memory.py reconpro/tests/test_reliability.py
 # 2026-09-05: the four previously-failing files (prompt_defense,
 # quality_intelligence, coverage_boost, enterprise) were FIXED and are now
