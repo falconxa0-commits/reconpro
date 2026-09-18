@@ -1,0 +1,37 @@
+# Dependabot — automated dependency security updates.
+# Keeps the ReconPro dependency set current and raises PRs (with alerts)
+# whenever a pinned dependency ships a fix.
+version: 2
+updates:
+  # Python runtime dependencies (pyproject.toml / requirements.txt)
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      timezone: "UTC"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "security"
+    commit-message:
+      prefix: "deps(pip)"
+    groups:
+      # batch minor/patch bumps to avoid PR spam
+      minor-and-patch:
+        update-types:
+          - "minor"
+          - "patch"
+
+  # GitHub Actions workflows (CI/release/security/SDKs)
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      timezone: "UTC"
+    labels:
+      - "dependencies"
+      - "ci"
+    commit-message:
+      prefix: "deps(ci)"

@@ -482,9 +482,41 @@ def component(name: str, version: str, scope: str, extra_props: list[dict] | Non
         "scope": scope,
         "purl": purl,
     }
+    # SPDX license ids for the shipped/runtime dependency set (verified
+    # against each project's packaging metadata 2026-09).
+    lic = _DEPENDENCY_LICENSES.get(name.lower())
+    if lic:
+        comp["licenses"] = [{"license": {"id": lic}}]
     if extra_props:
         comp["properties"] = extra_props
     return comp
+
+
+# SPDX identifiers of the ReconPro runtime/test dependency set, used to
+# enrich the CycloneDX SBOM (CycloneDX wants licenses per component).
+_DEPENDENCY_LICENSES: dict[str, str] = {
+    "rich": "MIT",
+    "textual": "MIT",
+    "requests": "Apache-2.0",
+    "cryptography": "Apache-2.0 OR BSD-3-Clause",
+    "aiohttp": "Apache-2.0 OR MIT",
+    "playwright": "Apache-2.0",
+    "openai": "Apache-2.0",
+    "anthropic": "MIT",
+    "networkx": "BSD-3-Clause",
+    "scapy": "GPL-2.0-only",
+    "shodan": "MIT",
+    "websockets": "BSD-3-Clause",
+    "jira": "BSD-2-Clause",
+    "slack-sdk": "MIT",
+    "pytest": "MIT",
+    "pytest-cov": "MIT",
+    "build": "MIT",
+    "wheel": "MIT",
+    "twine": "Apache-2.0",
+    "pip-audit": "Apache-2.0 OR MIT",
+    "ruff": "MIT",
+}
 
 
 def generate_sbom(version: str, reproducible: bool) -> tuple[Path, dict]:
@@ -560,6 +592,18 @@ def generate_sbom(version: str, reproducible: bool) -> tuple[Path, dict]:
                 }]
             },
             "component": main,
+            # Vulnerability status of the SBOM itself: dependency
+            # vulnerabilities are audited continuously by pip-audit in the
+            # daily CI security workflow (.github/workflows/security.yml);
+            # this field records that audit linkage.  Known-vulnerable
+            # dependency versions block the release gate (stage 2).
+            "properties": [
+                {"name": "reconpro:vulnerability-audit:tool", "value": "pip-audit (CI, daily)"},
+                {"name": "reconpro:vulnerability-audit:policy",
+                 "value": "known vulnerabilities in runtime dependencies fail the release gate"},
+                {"name": "reconpro:dependency-update:automation",
+                 "value": "GitHub Dependabot (.github/dependabot.yml)"},
+            ],
         },
         "components": components,
     }
@@ -903,7 +947,10 @@ def normalize_sdist(sdist: Path, epoch: int) -> None:
         members = tf.getmembers()
         members.sort(key=lambda m: m.name)
         with tempfile.TemporaryDirectory(prefix="rp-sdist-norm-") as td:
-            tf.extractall(td)  # safe: our own freshly built archive
+            try:
+                tf.extractall(td, filter="data")  # safe: our own freshly built archive
+            except TypeError:  # Python < 3.12 has no filter kwarg
+                tf.extractall(td)
             tmp_out = Path(td) / "out.tar"
             with tarfile.open(tmp_out, "w", format=tarfile.GNU_FORMAT) as out:
                 for m in members:
